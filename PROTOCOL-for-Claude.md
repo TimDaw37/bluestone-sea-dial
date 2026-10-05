@@ -236,3 +236,23 @@ Major rivers (coarse): Teifi, Tywi, Usk, Wye, Severn, Avon — from OSM waterway
 
 **Pass-3 outcome note (after run):** 100 m subset completed; switch 1→2 and inland lock-in hold; Land’s End only at m=0.05 on full_coast. **50 m skipped** — full frame not cheap (~4× 100 m).
 
+
+### A4 — 2026-10-05 — method review checks (Claude)
+
+**Recorded before the A4 sensitivity runs.** Only reproduction runs of pass-2 settings (to validate a new engine) were made before this entry.
+
+**Why.** A review of passes 1–3 (`METHOD_REVIEW.md`) found: (i) the 1→2 switch bracket is coarse, and the two bracketing routes imply a switch close to `m_water` ≈ 1.07; (ii) the overland cost is linear in rise and fall, so it equals distance + 4 × total climb + 2.6 × total descent, independent of steepness; (iii) 8-neighbour paths overstate straight-line distance by up to 8.2 % depending on bearing, which is the same order as the gap between the routes; (iv) no cost is charged for putting a stone on or taking it off water; (v) the pass-2/3 tile set lacked the SP and SZ 100 km squares, so a block south of Bournemouth was filled as sea and a block NE of Bristol was impassable; (vi) the Land's End route runs along the frame's southern edge (P5); (vii) the A40 / Teifi–Usk–Wye test (mean Welsh land northing ≥ 200 km) is too loose to identify that corridor.
+
+**Changes (new engine `model/engine.py`; identical cost rule when the new dials are off).**
+- DEM rebuilt from the full `terr50_gagg_gb.zip` (all 100 km squares touching the frame). Aggregation `a4`: a cell is sea if ≥ 50 % of its 50 m posts are open sea; land elevation is the mean of land posts only. Below-OD pockets not connected to the sea count as land.
+- New dials, each reported separately; none redefines the main result:
+  - fine `m_water` bisection for the switch (tolerance 0.005);
+  - neighbourhood 8 vs 16;
+  - grain 400 / 200 / 100 m;
+  - climb weight `W_UP` ∈ {1, 2, 4, 8, 16} with `W_DN = 0.65 × W_UP`;
+  - transfer cost `T` per land↔water step ∈ {0, 5, 10, 25, 50} km of flat-ground equivalent;
+  - maximum overland gradient ∈ {none, 0.15, 0.10}.
+- Switch defined as the `m_water` at which the water fraction of the least-cost path first falls to ≤ 0.10 (inland-preferring); the last sea-preferring value is also reported.
+- Corridor description by named waypoints (where the path crosses E 260 km, E 300 km, the Severn, and E 380 km) instead of a single mean-northing flag.
+
+Pass/fail criteria P1–P5 and the 0.25 / 0.10 thresholds are unchanged.
