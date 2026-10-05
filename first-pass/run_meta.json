@@ -1,0 +1,28 @@
+{
+  "maps": [
+    "map_sea_preferring_m0.1.png",
+    "map_inland_preferring_m50.0.png",
+    "map_switch_bracket_m1.0_to_m2.0.png",
+    "map_all_m_carn_goedog.png"
+  ],
+  "elapsed_s": 144.0,
+  "switch_pair": [
+    1.0,
+    2.0,
+    "sea-preferring",
+    "inland-preferring"
+  ],
+  "sea_ms_carn": [
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "inland_ms_carn": [
+    2.0,
+    5.0,
+    10.0,
+    25.0,
+    50.0
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "xmin": 120000,
+  "ymax": 260000,
+  "cell": 100,
+  "width": 3300,
+  "height": 2500,
+  "xmax": 450000,
+  "ymin": 10000,
+  "tiles_used": 467,
+  "note": "pass-3 100 m Terrain 50; ocean-fill as A2/A3"
+}

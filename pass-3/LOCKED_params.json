@@ -1,0 +1,78 @@
+{
+  "locked_at": "2026-10-05T09:27:05",
+  "pass_name": "pass-3",
+  "amendment": "A3",
+  "WORKING_CELL_M": 100,
+  "optional_50m": true,
+  "RUNS": [
+    {
+      "m_water": 0.5,
+      "river_mode": "ignore",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 0.5,
+      "river_mode": "conduit",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 1.0,
+      "river_mode": "ignore",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 1.0,
+      "river_mode": "conduit",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 2.0,
+      "river_mode": "ignore",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 2.0,
+      "river_mode": "conduit",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 5.0,
+      "river_mode": "ignore",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 5.0,
+      "river_mode": "conduit",
+      "coastal_reach": "bristol_channel"
+    },
+    {
+      "m_water": 0.05,
+      "river_mode": "ignore",
+      "coastal_reach": "full_coast"
+    },
+    {
+      "m_water": 0.1,
+      "river_mode": "ignore",
+      "coastal_reach": "full_coast"
+    }
+  ],
+  "STARTS": {
+    "Carn_Goedog": [
+      212878.0,
+      233160.0
+    ],
+    "Craig_Rhos_y_felin": [
+      211650.0,
+      236140.0
+    ]
+  },
+  "END": [
+    "Stonehenge",
+    412250.0,
+    142200.0
+  ],
+  "COAST_WEST_LIMIT": 200000,
+  "W_UP": 4.0,
+  "W_DN": 2.6,
+  "same_formula_as_pass2": true
+}

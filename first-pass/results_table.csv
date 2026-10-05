@@ -1,0 +1,19 @@
+start,m_water,total_cost,length_m,water_fraction,regime,severn_approach,runtime_s
+Carn_Goedog,0.1,126109.5,263424.8,0.6119,sea-preferring,lower Severn / estuary,9.4
+Carn_Goedog,0.25,150093.0,261667.4,0.6068,sea-preferring,lower Severn / estuary,7.9
+Carn_Goedog,0.5,188641.1,249714.5,0.5375,sea-preferring,Bristol Channel south,8.0
+Carn_Goedog,1.0,247599.4,238850.8,0.3888,sea-preferring,Bristol Channel south,7.7
+Carn_Goedog,2.0,257332.3,237921.9,0.0148,inland-preferring,lower Severn / estuary,7.8
+Carn_Goedog,5.0,262005.5,238253.2,0.0052,inland-preferring,lower Severn / estuary,7.8
+Carn_Goedog,10.0,268248.1,238253.2,0.0052,inland-preferring,lower Severn / estuary,7.3
+Carn_Goedog,25.0,277183.5,255249.4,0.0,inland-preferring,Monmouth-side,7.3
+Carn_Goedog,50.0,277183.5,255249.4,0.0,inland-preferring,Monmouth-side,6.7
+Craig_Rhos_y_felin,0.1,130121.2,267390.5,0.6048,sea-preferring,lower Severn / estuary,8.1
+Craig_Rhos_y_felin,0.25,153944.5,263552.7,0.5986,sea-preferring,lower Severn / estuary,8.0
+Craig_Rhos_y_felin,0.5,192749.1,253211.6,0.5301,sea-preferring,Bristol Channel south,8.2
+Craig_Rhos_y_felin,1.0,251392.1,242347.8,0.3899,sea-preferring,Bristol Channel south,8.0
+Craig_Rhos_y_felin,2.0,259481.6,240198.8,0.0147,inland-preferring,lower Severn / estuary,8.1
+Craig_Rhos_y_felin,5.0,264154.8,240530.2,0.0052,inland-preferring,lower Severn / estuary,7.4
+Craig_Rhos_y_felin,10.0,270397.5,240530.2,0.0052,inland-preferring,lower Severn / estuary,7.3
+Craig_Rhos_y_felin,25.0,279321.9,257194.9,0.0,inland-preferring,Monmouth-side,6.9
+Craig_Rhos_y_felin,50.0,279321.9,257194.9,0.0,inland-preferring,Monmouth-side,6.5

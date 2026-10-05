@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.npy
+*.zip
+data/terr50_tiles/
+data/rivers/data/
+data/rivers/oprvrs*
+data/rivers/doc/
+*.ASC
+*.asc
+.DS_Store

@@ -1,0 +1,11 @@
+{
+  "xmin": 120000,
+  "ymax": 260000,
+  "cell": 200,
+  "width": 1650,
+  "height": 1250,
+  "xmax": 450000,
+  "ymin": 10000,
+  "tiles_used": 467,
+  "note": "pass-2 expanded frame for Land's End test; Terrain 50 @ 200 m"
+}

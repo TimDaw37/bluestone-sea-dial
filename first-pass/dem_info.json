@@ -1,0 +1,11 @@
+{
+  "xmin": 180000,
+  "ymax": 260000,
+  "cell": 200,
+  "width": 1300,
+  "height": 700,
+  "xmax": 440000,
+  "ymin": 120000,
+  "tiles_used": 281,
+  "note": "first-pass working grid 200 m, mean-resampled from Terrain 50 50 m posts via 100 m mosaic"
+}

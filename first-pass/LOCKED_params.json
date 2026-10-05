@@ -1,0 +1,44 @@
+{
+  "locked_at": "2026-10-05T08:49:11",
+  "DEM_SOURCE": "OS Terrain 50 (ASCII Grid), OGL \u2014 from terr50_gagg_gb / flyover cache",
+  "WORKING_CELL_M": 200,
+  "BBOX": {
+    "xmin": 180000,
+    "xmax": 440000,
+    "ymin": 120000,
+    "ymax": 260000
+  },
+  "STARTS": {
+    "Carn_Goedog": [
+      212878.0,
+      233160.0
+    ],
+    "Craig_Rhos_y_felin": [
+      211650.0,
+      236140.0
+    ]
+  },
+  "END": [
+    "Stonehenge",
+    412250.0,
+    142200.0
+  ],
+  "M_WATER_GRID": [
+    0.1,
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    5.0,
+    10.0,
+    25.0,
+    50.0
+  ],
+  "SEA_FRAC_THRESH": 0.25,
+  "INLAND_FRAC_THRESH": 0.1,
+  "W_UP": 4.0,
+  "W_DN": 2.6,
+  "WATER_ELEV_MAX": 0.0,
+  "water_step_definition": "m_water * d when destination is water or both water; else d*(1+W_UP*up+W_DN*dn)",
+  "rivers": "not separately digitised in v1; sea/estuary from DEM elev < 0 only"
+}
