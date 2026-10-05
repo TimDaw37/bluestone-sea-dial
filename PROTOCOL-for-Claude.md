@@ -256,3 +256,20 @@ Major rivers (coarse): Teifi, Tywi, Usk, Wye, Severn, Avon — from OSM waterway
 - Corridor description by named waypoints (where the path crosses E 260 km, E 300 km, the Severn, and E 380 km) instead of a single mean-northing flag.
 
 Pass/fail criteria P1–P5 and the 0.25 / 0.10 thresholds are unchanged.
+
+### A5 — 2026-10-05 — keeping to the coast (Tim's request; Claude)
+
+**Recorded before any A5 run.**
+
+**Why.** Atkinson's sea route assumed boats would hug the coast and keep within sight of land. The passes so far let a route cross any sea cell at the same price, so that assumption has not been tested.
+
+**Change.** A new dial `coast_rule` closes some sea cells. It is applied on top of the A4 engine and DEM, with the transfer cost and the other A4 dials as stated per run.
+- `none` — all sea open (as A1–A4).
+- `within_D` for D ∈ {2, 5, 10, 20} km — sea cells whose centre is more than D km from the nearest land cell are closed.
+- `in_sight` — a sea cell is open only if some land is above the horizon from it: there is a land cell of elevation H (m, Terrain 50, the cell's mean) at distance r ≤ 3.57 × (√2 + √H) km. Eye height 2 m; no refraction allowance beyond the 3.57 constant; haze and weather ignored. Computed with distance transforms over elevation bands of 10 m up to 900 m.
+
+Land cells and estuaries are unchanged. The start and end stay on land, so a route always exists (all-land is always open).
+
+**Runs (locked).** Both outcrops; 200 m; 8 moves; `bristol_channel` and `full_coast`; transfer cost 0 and 25 km; switch bisection as A4; plus the Land's End test at `m_water` 0.05 under `full_coast`.
+
+**Reported.** Switch value, sea-route length and water share at the last sea-preferring value, and whether the Land's End route survives.

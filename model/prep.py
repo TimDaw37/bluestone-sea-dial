@@ -79,3 +79,31 @@ def surface(cell, style="a4"):
     from engine import Surface
     z, sea, gi = aggregate(cell, style)
     return Surface(z, sea, river_mask(gi), gi)
+
+
+def coast_masks(z, sea, cell):
+    """A5: distance from each sea cell to the nearest land cell (km), and the in-sight mask."""
+    land = ~sea
+    dist_km = ndimage.distance_transform_edt(sea) * cell / 1000.0
+    zl = np.where(land & np.isfinite(z), z, -1.0)
+    visible = np.zeros(sea.shape, bool)
+    for H in range(0, 901, 10):
+        src = land & (zl >= H)
+        if not src.any():
+            break
+        d = ndimage.distance_transform_edt(~src) * cell / 1000.0
+        visible |= d <= 3.57 * (2 ** 0.5 + max(H, 0) ** 0.5)
+    return dist_km, visible
+
+
+def closed_sea(rule, z, sea, cell, _cache={}):
+    key = (id(z), cell)
+    if key not in _cache:
+        _cache[key] = coast_masks(z, sea, cell)
+    dist_km, visible = _cache[key]
+    if rule in (None, "none"):
+        return None
+    if rule == "in_sight":
+        return sea & ~visible
+    D = float(rule.split("_")[1])
+    return sea & (dist_km > D)

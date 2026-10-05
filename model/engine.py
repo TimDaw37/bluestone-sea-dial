@@ -104,7 +104,7 @@ class Surface:
         return self._edges[nbr]
 
     def weights(self, m_water, river_mode="ignore", coastal="bristol_channel",
-                transfer=0.0, gmax=None, nbr=8, w_up=W_UP, w_dn=W_DN):
+                transfer=0.0, gmax=None, nbr=8, w_up=W_UP, w_dn=W_DN, closed_sea=None):
         src, dst, d, dz = self._edge_arrays(nbr)
         sea = self.sea.ravel()
         if coastal == "bristol_channel":
@@ -112,6 +112,10 @@ class Surface:
             dead = self.west_sea.ravel()
         else:
             dead = np.zeros_like(sea)
+        if closed_sea is not None:  # A5: sea cells shut by the coast rule
+            cs = closed_sea.ravel() & self.sea.ravel()
+            sea = sea & ~cs
+            dead = dead | cs
         riv = self.river.ravel() & ~self.sea.ravel()
         water = sea | riv if river_mode == "conduit" else sea
         wa, wb = water[src], water[dst]

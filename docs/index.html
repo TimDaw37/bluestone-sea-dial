@@ -103,6 +103,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
       <span><i style="border-color:var(--sea)"></i>on water</span>
       <span><i style="border-color:var(--ghost);border-top-style:dashed"></i>pinned route</span>
       <span>● transfer to or from water</span>
+      <span><i style="border-top:9px solid rgba(28,38,48,.45);width:16px"></i>closed sea</span>
     </div>
   </section>
   <section class="card readout" style="margin-top:0" aria-live="polite">
@@ -141,11 +142,11 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
       </div>
     </div>
     <div class="ctl">
-      <label>Sea allowed</label>
-      <div class="seg" role="group" aria-label="Sea allowed" id="c-seg">
-        <button data-v="bristol" aria-pressed="true">Bristol Channel only</button><button data-v="full" aria-pressed="false">Whole coast</button>
+      <label>Keep close to land</label>
+      <div class="seg" role="group" aria-label="Keep close to land" id="k-seg">
+        <button data-v="none" aria-pressed="true">No limit</button><button data-v="sight" aria-pressed="false">In sight</button><button data-v="d20" aria-pressed="false">20 km</button><button data-v="d10" aria-pressed="false">10 km</button><button data-v="d5" aria-pressed="false">5 km</button><button data-v="d2" aria-pressed="false">2 km</button>
       </div>
-      <small>“Bristol Channel only” closes the sea west of easting 200 km, so no route can round Pembrokeshire or Land’s End.</small>
+      <small>Tests Atkinson’s coast-hugging assumption. “In sight” keeps sea where some land shows above the horizon from a boat (eye 2 m): 3.57 × (√2 + √H) km for land H m high. The km settings close sea farther than that from the nearest land. The whole coast is open, so a route can round St David’s Head or Land’s End; north-about routes win only when water costs about 0.15 × flat ground or less.</small>
     </div>
     <div class="ctl">
       <label>Major rivers</label>
@@ -174,6 +175,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
         <button class="btn" data-preset="landing">Landing cost 25 km</button>
         <button class="btn" data-preset="lands">Very cheap water, whole coast</button>
         <button class="btn" data-preset="hauling">Steep-averse hauling</button>
+        <button class="btn" data-preset="atkinson">Cheap water, within 5 km of land</button>
       </div>
     </div>
   </aside>
@@ -236,13 +238,16 @@ const G = {};
 const XMIN = 120000, YMAX = 260000, WEST_LIMIT = 200000, BARRIER = 100;
 const END = [412250, 142200];
 function prepare(g, p){
-  const {W,H,cell,z,fl} = g, N = W*H;
+  const {W,H,cell,z,fl,dq} = g, N = W*H;
   const westCol = Math.floor((WEST_LIMIT - XMIN)/cell);
+  const rule = p.coastRule || 'none', lim = rule.startsWith('d') ? 4*Number(rule.slice(1)) : 0;
   const water = new Uint8Array(N), dead = new Uint8Array(N), riv = new Uint8Array(N), ze = new Float32Array(N);
   for (let i=0;i<N;i++){
     const s = fl[i]&1, r = (fl[i]&2) && !s;
     riv[i] = r ? 1 : 0;
-    if (s){ if (p.coast==='bristol' && (i%W) < westCol) dead[i]=1; else water[i]=1; ze[i]=0; }
+    if (s){
+      const shut = (p.coast==='bristol' && (i%W) < westCol) || (rule==='sight' && !(fl[i]&4)) || (lim>0 && dq[i]>lim);
+      if (shut) dead[i]=1; else water[i]=1; ze[i]=0; }
     else { if (z[i]===-32768) dead[i]=1; ze[i]=z[i]/10; if (r && p.rivers==='conduit') water[i]=1; }
   }
   return {water,dead,riv,ze};
@@ -328,7 +333,10 @@ onmessage = (ev)=>{
   const p = msg.p, pre = prepare(G[p.cell], p);
   if (msg.type==='run'){
     const r = run(p, pre);
-    postMessage({type:'route', id:msg.id, r}, r? [r.xy.buffer, r.wflag.buffer] : []);
+    const g = G[p.cell], N = g.W*g.H, shut = new Uint8Array(N);
+    for (let i=0;i<N;i++) shut[i] = (g.fl[i]&1) && pre.dead[i] ? 1 : 0;
+    const mask = {W:g.W, H:g.H, shut};
+    postMessage({type:'route', id:msg.id, r, mask}, (r? [r.xy.buffer, r.wflag.buffer] : []).concat([shut.buffer]));
   } else if (msg.type==='sweep'){
     const ms = [0.05,0.07,0.1,0.15,0.2,0.3,0.5,0.7,0.85,1,1.15,1.3,1.5,2,3,5,10,20,50];
     const pts=[];
@@ -361,7 +369,7 @@ const PLACES = [
   ['Brecon',304,228],['Abergavenny',330,214],['Monmouth',351,213],['Cardiff',318,176],['Newport',331,188],
   ['Gloucester',383,218],['Bristol',359,173],['Weston-super-Mare',332,161],['Bath',375,165],['Warminster',387,145],
   ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112]];
-const state = {m:1, T:0, wup:4, gmax:0, coast:'bristol', rivers:'ignore', start:'cg', custom:null, cell:400, nbr:8, view:'wessex'};
+const state = {m:1, T:0, wup:4, gmax:0, coast:'full', coastRule:'none', rivers:'ignore', start:'cg', custom:null, cell:400, nbr:8, view:'wessex'};
 let route=null, pinned=null, sweep=null, gridsReady={}, reqId=0, latest=0, busy=false, pending=false;
 const $ = id => document.getElementById(id);
 const canvas = $('map'), ctx = canvas.getContext('2d');
@@ -385,21 +393,22 @@ function seg(id, key, cast=v=>v){
     state[key]=cast(b.dataset.v); if(key==='start') state.custom=null; setSeg(id, b.dataset.v); schedule(); });
 }
 function setSeg(id, v){ for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v===String(v))); }
-seg('g-seg','gmax',Number); seg('c-seg','coast'); seg('r-seg','rivers'); seg('s-seg','start'); seg('n-seg','nbr',Number);
+seg('g-seg','gmax',Number); seg('k-seg','coastRule'); seg('r-seg','rivers'); seg('s-seg','start'); seg('n-seg','nbr',Number);
 $('cell-seg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; state.cell=+b.dataset.v; setSeg('cell-seg',b.dataset.v); ensureGrid(state.cell).then(schedule); });
 for (const v of ['wessex','full']) $('v-'+v).addEventListener('click', ()=>{ state.view=v; setSeg2(); draw(); });
 function setSeg2(){ $('v-wessex').setAttribute('aria-pressed', String(state.view==='wessex')); $('v-full').setAttribute('aria-pressed', String(state.view==='full')); }
 const PRESETS = {
-  locked:{m:1,T:0,wup:4,gmax:0,coast:'bristol',rivers:'ignore',nbr:8},
-  landing:{m:1,T:25,wup:4,gmax:0,coast:'bristol',rivers:'ignore',nbr:8},
-  lands:{m:0.05,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8},
-  hauling:{m:1,T:10,wup:12,gmax:0.10,coast:'bristol',rivers:'ignore',nbr:16},
+  locked:{m:1,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
+  landing:{m:1,T:25,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
+  lands:{m:0.05,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
+  hauling:{m:1,T:10,wup:12,gmax:0.10,coast:'full',rivers:'ignore',nbr:16,coastRule:'none'},
+  atkinson:{m:0.5,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'d5'},
 };
 document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
   Object.assign(state, PRESETS[b.dataset.preset]); applyState(); schedule(); }));
 function applyState(){
   $('m').value = sliderFromM(state.m); $('t').value=state.T; $('wup').value=state.wup*2;
-  setSeg('g-seg',state.gmax); setSeg('c-seg',state.coast); setSeg('r-seg',state.rivers); setSeg('n-seg',state.nbr); setSeg('cell-seg',state.cell);
+  setSeg('g-seg',state.gmax); setSeg('k-seg',state.coastRule); setSeg('r-seg',state.rivers); setSeg('n-seg',state.nbr); setSeg('cell-seg',state.cell);
   setSeg('s-seg', state.custom? '' : state.start); syncLabels();
 }
 
@@ -411,7 +420,7 @@ worker.onmessage = ev => {
   if (msg.type==='gridok'){ gridsReady[msg.cell]=true; (waiters['g'+msg.cell]||[]).forEach(f=>f()); return; }
   if (msg.type==='route'){
     busy=false;
-    if (msg.id===latest){ route = msg.r; show(); draw(); }
+    if (msg.id===latest){ route = msg.r; setMask(msg.mask); show(); draw(); }
     if (pending){ pending=false; go(); }
   }
   if (msg.type==='progress') $('sweep-status').textContent = `Running ${msg.done} of ${msg.of} routes…`;
@@ -429,8 +438,8 @@ async function fetchGrid(cell){
     buf = new Uint8Array(await ds.arrayBuffer());
   }
   const W = cell===400?825:1650, H = cell===400?625:1250, N=W*H;
-  const z = new Int16Array(buf.buffer.slice(0, 2*N)), fl = new Uint8Array(buf.buffer.slice(2*N, 3*N));
-  return {W,H,cell,z,fl};
+  const z = new Int16Array(buf.buffer.slice(0, 2*N)), fl = new Uint8Array(buf.buffer.slice(2*N, 3*N)), dq = new Uint8Array(buf.buffer.slice(3*N, 4*N));
+  return {W,H,cell,z,fl,dq};
 }
 const gridLoads = {};
 function ensureGrid(cell){
@@ -440,7 +449,7 @@ function ensureGrid(cell){
       $('status').textContent = `Loading ${cell} m terrain…`;
       const g = await fetchGrid(cell);
       (waiters['g'+cell] = waiters['g'+cell] || []).push(resolve);
-      worker.postMessage({type:'grid', cell, grid:g}, [g.z.buffer, g.fl.buffer]);
+      worker.postMessage({type:'grid', cell, grid:g}, [g.z.buffer, g.fl.buffer, g.dq.buffer]);
     } catch(err){ $('status').textContent = 'Terrain did not load. Reload the page to try again.'; reject(err); }
   });
   return gridLoads[cell];
@@ -448,7 +457,7 @@ function ensureGrid(cell){
 function params(){
   const st = state.custom || START[state.start];
   return {m:state.m, T:state.T*1000, wup:state.wup, wdn:0.65*state.wup, gmax:state.gmax, coast:state.coast,
-          rivers:state.rivers, start:[st[0],st[1]], cell:state.cell, nbr:state.nbr};
+          rivers:state.rivers, start:[st[0],st[1]], cell:state.cell, nbr:state.nbr, coastRule:state.coastRule};
 }
 function paramsKey(){ const p=params(); delete p.m; return JSON.stringify(p); }
 let timer=null;
@@ -487,6 +496,14 @@ function show(){
   $('status').textContent = `${st} → Stonehenge · ${state.cell} m grid · ${state.nbr} moves`;
 }
 
+// --- closed-sea overlay ---
+const maskCanvas = document.createElement('canvas'); let maskInfo = null;
+function setMask(m){
+  if (!m) return; maskCanvas.width=m.W; maskCanvas.height=m.H;
+  const mc=maskCanvas.getContext('2d'), img=mc.createImageData(m.W,m.H), d=img.data;
+  for (let i=0;i<m.shut.length;i++){ if (m.shut[i]){ const k=4*i; d[k]=28; d[k+1]=38; d[k+2]=48; d[k+3]=105; } }
+  mc.putImageData(img,0,0); maskInfo={cell:m.W===825?400:200};
+}
 // --- map ---
 function view(){ return VIEWS[state.view]; }
 function fitCanvas(){
@@ -504,7 +521,9 @@ function draw(){
     const sx=(v.xmin-FRAME.xmin)/200, sy=(FRAME.ymax-v.ymax)/200, sw=(v.xmax-v.xmin)/200, sh=(v.ymax-v.ymin)/200;
     ctx.drawImage(relief, sx, sy, sw, sh, 0, 0, W, H);
   }
-  if (state.coast==='bristol'){ const [x0]=toPx(200000,0); ctx.save(); ctx.fillStyle='rgba(40,50,60,.16)'; ctx.fillRect(0,0,Math.max(0,x0),H);
+  if (maskInfo){ const c=maskInfo.cell; ctx.save(); ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(maskCanvas, (v.xmin-FRAME.xmin)/c, (FRAME.ymax-v.ymax)/c, (v.xmax-v.xmin)/c, (v.ymax-v.ymin)/c, 0, 0, W, H); ctx.restore(); }
+  if (state.coast==='bristol'){ const [x0]=toPx(200000,0); ctx.save();
     ctx.setLineDash([6*s,5*s]); ctx.strokeStyle='rgba(30,40,50,.55)'; ctx.lineWidth=1.2*s; ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0,H); ctx.stroke(); ctx.restore(); }
   // places
   ctx.font = `${11*s}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline='middle';
