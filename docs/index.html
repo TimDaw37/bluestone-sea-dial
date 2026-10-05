@@ -89,7 +89,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
 <header>
   <div class="eyebrow">Preseli → Stonehenge · least-cost routes · OS Terrain 50</div>
   <h1>Bluestone sea dial</h1>
-  <p class="lede">How much does it cost to move a load one kilometre by water, compared with one kilometre over flat ground? Set the dials and the map shows the cheapest route from Carn Goedog to Stonehenge across real terrain, chosen from 468 solved routes. It tests assumptions; it does not reconstruct what happened.</p>
+  <p class="lede">How much does it cost to move a load one kilometre by water, compared with one kilometre over flat ground? Set the dials and the map shows the cheapest route from the Preseli outcrops to Stonehenge across real terrain, chosen from 936 solved routes. It tests assumptions; it does not reconstruct what happened.</p>
 </header>
 
 <div class="main">
@@ -121,6 +121,13 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
   </div>
 
   <aside class="panel" aria-label="Model dials">
+    <div class="ctl">
+      <label>Start</label>
+      <div class="seg" role="group" aria-label="Start" id="s-seg">
+        <button data-v="cg" aria-pressed="true">Carn Goedog</button><button data-v="rf" aria-pressed="false">Craig Rhos-y-felin</button>
+      </div>
+      <small>Carn Goedog is on the ridge at about 290 m, 9 km from the sea at Newport Bay. Craig Rhos-y-felin is in the valley below at about 80 m, 6 km from the same bay. Both give the same switch between sea and land. Only Rhos-y-felin, being lower and nearer the north coast, sends cheap water (0.2 ×) north round St David’s Head.</small>
+    </div>
     <div class="ctl">
       <label for="m">Water cost per km <output id="m-out">1 ×</output></label>
       <input id="m" type="range" min="0" max="12" step="1" value="7">
@@ -160,6 +167,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
       <li>Remove the loading charge and the balance point moves to about 1 × flat ground (1.03 in finer runs). Sea and land routes are then both about 239 km long, so the hills barely count. Just above that point the cheapest “land” route hops the estuaries along the south Wales coast.</li>
       <li>With no loading charge and water at 2 to 5 ×, the route follows the Tywi, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
       <li>Keeping in sight of land changes nothing. Only a 2 km limit moves the switch.</li>
+      <li>The two outcrops agree in 466 of 468 settings. The difference is at cheap water: from low-lying Craig Rhos-y-felin the route goes north round St David’s Head at 0.2 ×, where from Carn Goedog it walks south to Carmarthen Bay.</li>
       <li>The route rounds Land’s End only when water costs about a tenth of flat ground or less.</li>
     </ul>
   </section>
@@ -168,7 +176,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
     <div class="formula">overland   d + c × climb + 0.65c × descent
 on water   m × d
 loading    + T each time onto or off water</div>
-    <p><em>d</em> is horizontal distance in metres, <em>c</em> the climb penalty, <em>m</em> the water cost and <em>T</em> the loading charge. The terrain is OS Terrain 50 on a 200 m grid; sea is every cell mostly below 0 m OD. Each route is the cheapest path found by Dijkstra’s algorithm, solved in advance with the project’s Python model. The second outcrop, Craig Rhos-y-felin, gives the same switch.</p>
+    <p><em>d</em> is horizontal distance in metres, <em>c</em> the climb penalty, <em>m</em> the water cost and <em>T</em> the loading charge. The terrain is OS Terrain 50 on a 200 m grid; sea is every cell mostly below 0 m OD. Each route is the cheapest path found by Dijkstra’s algorithm, solved in advance with the project’s Python model.</p>
   </section>
   <section class="card">
     <h2>What the model leaves out</h2>
@@ -192,15 +200,15 @@ loading    + T each time onto or off water</div>
 
 <script>
 (()=>{
-const START = [212878,233160,'Carn Goedog'], END = [412250,142200];
+const STARTS = {cg:[212878,233160,'Carn Goedog'], rf:[211650,236140,'Craig Rhos-y-felin']}, END = [412250,142200];
 const FRAME = {xmin:120000,xmax:450000,ymin:10000,ymax:260000};
 const VIEWS = {wessex:{xmin:170000,xmax:440000,ymin:110000,ymax:262000}, full:FRAME};
 const PLACES = [
   ['Milford Haven',190,206],['Tenby',213,200],['Carmarthen',241,220],['Swansea',265,193],['Llandovery',276,234],
   ['Brecon',304,228],['Abergavenny',330,214],['Monmouth',351,213],['Cardiff',318,176],['Newport',331,188],
   ['Gloucester',383,218],['Bristol',359,173],['Avonmouth',351,178],['Weston-super-Mare',332,161],['Bath',375,165],['Warminster',387,145],
-  ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112],['Pendine',225,208]];
-const PROTOCOL = {mi:7, t:25, c:4, coast:'sight'};   // page defaults (Tim, 5 Oct 2026)
+  ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112],['Pendine',225,208],['Newport (Pembs)',205,239]];
+const PROTOCOL = {mi:7, t:25, c:4, coast:'sight', start:'cg'};   // page defaults (Tim, 5 Oct 2026)
 const state = Object.assign({view:'wessex', all:false}, PROTOCOL);
 let L = null;
 const $ = id => document.getElementById(id);
@@ -209,21 +217,21 @@ const relief = new Image(); relief.src = 'data/relief.jpg'; relief.onload = draw
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
 const pyNum = v => Number.isInteger(v) ? v.toFixed(1) : String(v);
-function key(mi){ return `${state.coast}|${state.c}|${state.t}|${pyNum(L.dials.m[mi ?? state.mi])}`; }
+function key(mi){ return `${state.start}|${state.coast}|${state.c}|${state.t}|${pyNum(L.dials.m[mi ?? state.mi])}`; }
 function cur(){ return L && L.routes[key()]; }
 function regimeOf(wf){ return wf>=0.25?['sea','Sea-preferring']:wf<=0.10?['land','Inland-preferring']:['mix','Mixed']; }
 const fm = m => (m<0.1? m.toFixed(2) : m<1 ? String(+m.toFixed(2)) : String(m));
 
 // --- controls ---
 function seg(id, k, cast){ $(id).addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; state[k]=cast(b.dataset.v); sync(); }); }
-seg('t-seg','t',Number); seg('c-seg','c',Number); seg('k-seg','coast',String);
+seg('s-seg','start',String); seg('t-seg','t',Number); seg('c-seg','c',Number); seg('k-seg','coast',String);
 $('m').addEventListener('input', e=>{ state.mi=+e.target.value; sync(); });
 $('all').addEventListener('change', e=>{ state.all=e.target.checked; draw(); });
 $('reset').addEventListener('click', ()=>{ Object.assign(state, PROTOCOL); sync(); });
 for (const v of ['wessex','full']) $('v-'+v).addEventListener('click', ()=>{ state.view=v; sync(); });
 function setSeg(id, v){ for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v===String(v))); }
 function sync(){
-  setSeg('t-seg',state.t); setSeg('c-seg',state.c); setSeg('k-seg',state.coast);
+  setSeg('s-seg',state.start); setSeg('t-seg',state.t); setSeg('c-seg',state.c); setSeg('k-seg',state.coast);
   $('v-wessex').setAttribute('aria-pressed', String(state.view==='wessex')); $('v-full').setAttribute('aria-pressed', String(state.view==='full'));
   $('m').value = state.mi;
   if (!L) return;
@@ -260,7 +268,7 @@ function show(){
   $('stats').innerHTML = pair('Route length', r.km.toFixed(1)+' km') + pair('On water', `${r.wkm.toFixed(1)} km · ${(100*r.wf).toFixed(1)} %`)
     + pair('Climb / descent', `${r.climb} m / ${r.desc} m`) + pair('Total cost', r.cost.toFixed(1)+' flat-km')
     + pair('Water', `<span style="font-family:var(--body);font-size:12.5px">${trTxt}</span>`, true);
-  $('status').textContent = `Carn Goedog → Stonehenge · 200 m grid · water ${fm(L.dials.m[state.mi])} × · loading ${state.t} km · climb ${state.c}`;
+  $('status').textContent = `${STARTS[state.start][2]} → Stonehenge · 200 m grid · water ${fm(L.dials.m[state.mi])} × · loading ${state.t} km · climb ${state.c}`;
 }
 
 // --- map ---
@@ -296,7 +304,7 @@ function draw(){
   const r = cur();
   if (r){ drawPath(L.paths[r.p]);
     for (const t of r.tr){ const [px,py]=toPx(t[0]*100,t[1]*100); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px,py,4.2*s,0,7); ctx.fill(); ctx.fillStyle='#1b2326'; ctx.beginPath(); ctx.arc(px,py,2.4*s,0,7); ctx.fill(); } }
-  marker(START[0],START[1],'#b3261e',START[2]); marker(END[0],END[1],'#1b2326','Stonehenge',true);
+  { const st=STARTS[state.start]; marker(st[0],st[1],'#b3261e',st[2]); } marker(END[0],END[1],'#1b2326','Stonehenge',true);
 }
 function drawMask(mk){
   maskCanvas.width=mk.W; maskCanvas.height=mk.H;

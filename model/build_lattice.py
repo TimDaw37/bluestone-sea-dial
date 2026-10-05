@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Precompute the web page's route lattice (as on the sarsen route page): every combination of
-water cost × landing charge × climb penalty × coast rule, Carn Goedog → Stonehenge, 200 m grid, 8 moves,
+start (Carn Goedog, Craig Rhos-y-felin) × water cost × landing charge × climb penalty × coast rule → Stonehenge, 200 m grid, 8 moves,
 whole coast open, rivers ignored. Writes docs/data/lattice.json.
 
 Paths are simplified (Douglas–Peucker, 100 m) separately on each land or water run, so the
@@ -38,11 +38,12 @@ def main():
     masks = {k: closed_sea(v, s.z, s.sea, 200) for k, v in COAST.items()}
     paths, index, keys = [], {}, {}
     t0 = time.time()
-    for ck, cs in masks.items():
+    for sk, sname in {"cg": "Carn_Goedog", "rf": "Craig_Rhos_y_felin"}.items():
+     for ck, cs in masks.items():
         for c in C:
             for t in T:
                 for m in M:
-                    r = s.run(STARTS["Carn_Goedog"], m, coastal="full_coast", transfer=t * 1000,
+                    r = s.run(STARTS[sname], m, coastal="full_coast", transfer=t * 1000,
                               w_up=c, w_dn=0.65 * c, closed_sea=cs)
                     rc = r["path_rc"]
                     xy = np.array([rc_to_xy(a, b, s.info) for a, b in rc])
@@ -69,12 +70,12 @@ def main():
                     # mark onto/off water for each transfer
                     ti = np.nonzero(water[1:] != water[:-1])[0]
                     tr = [[int(round(xy[k + 1][0] / 100)), int(round(xy[k + 1][1] / 100)), int(water[k + 1])] for k in ti]
-                    keys[f"{ck}|{c}|{t}|{m}"] = dict(
+                    keys[f"{sk}|{ck}|{c}|{t}|{m}"] = dict(
                         p=index[h], cost=round(r["cost"] / 1000, 1), km=round(r["length_m"] / 1000, 1),
                         wkm=round(r["water_m"] / 1000, 1), wf=round(r["water_fraction"], 4),
                         climb=round(r["climb_m"]), desc=round(r["descent_m"]), tr=tr)
-                print(ck, c, t, len(paths), round(time.time() - t0), flush=True)
-    OUT.write_text(json.dumps(dict(dials=dict(m=M, t=T, c=C, coast=list(COAST)), routes=keys, paths=paths),
+                print(sk, ck, c, t, len(paths), round(time.time() - t0), flush=True)
+    OUT.write_text(json.dumps(dict(dials=dict(m=M, t=T, c=C, coast=list(COAST), start=["cg", "rf"]), routes=keys, paths=paths),
                               separators=(",", ":")))
     print("wrote", OUT, OUT.stat().st_size, "paths", len(paths), "routes", len(keys))
 
