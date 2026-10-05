@@ -120,6 +120,10 @@ Switch value of `m_water` (whole coast open; Carn Goedog / Craig Rhos-y-felin). 
 - The Bristol Channel is narrow enough that Atkinson's coast-hugging assumption hardly affects the choice between sea and land.
 - The "Bristol Channel only" setting (`bristol_channel`) gives the same switch values as the whole coast at every rule (see the CSV). The web page now omits it and leaves the whole coast open.
 
+## 3b. Near-cheapest corridor at the page defaults (5 Oct 2026)
+
+Cells on some route within 1%, 2% and 5% of the cheapest (forward and backward Dijkstra; Carn Goedog; water 1 ×, 25 km loading charge, climb 4, in sight of land): about 4,244, 6,002 and 11,020 km². Across Wales the 1% band is 15–20 km wide, with Teifi and Tywi strands. It narrows to a single crossing of the Severn at the Newnham–Arlingham reach (E 369.5–373.7, N 213.1–208.7 km), where the tidal channel is narrower than half a 200 m cell and so reads as land. River crossings carry no cost in the model, so this is a property of the terrain data and grain, not a modelled ford or bridge. With water at 2 × and no loading charge the band funnels to Beachley–Aust instead.
+
 ## 4. Pass/fail and predictions after A4
 
 | ID | Result |

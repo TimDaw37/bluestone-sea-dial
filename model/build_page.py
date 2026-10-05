@@ -5,5 +5,5 @@ d = Path(__file__).resolve().parent.parent / "docs"
 body = (d / "app.html").read_text()
 (d / "index.html").write_text('<!doctype html>\n<html lang="en-GB"><head><meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-    '<meta name="description" content="Least-cost sensitivity model: at what cost of water travel does a Preseli to Stonehenge route take the sea?">\n'
+    '<meta name="description" content="At what cost of water travel does the cheapest Preseli–Stonehenge route take the sea?">\n'
     '</head><body>\n' + body + '\n</body></html>\n')
