@@ -84,7 +84,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
 <header>
   <div class="eyebrow">Preseli → Stonehenge · least-cost routes · OS Terrain 50</div>
   <h1>Bluestone sea dial</h1>
-  <p class="lede">How much does it cost to move a load one kilometre by water, compared with one kilometre over flat ground? Set the dials and the map shows the cheapest route from the Preseli outcrops to Stonehenge across real terrain, chosen from 936 solved routes. It tests assumptions; it does not reconstruct what happened.</p>
+  <p class="lede">Set how costly water is next to walking on the flat. The map shows the cheapest Preseli–Stonehenge route under those rules, picked from 936 already-solved paths. A sensitivity test — not a reconstruction.</p>
 </header>
 
 <div class="main">
@@ -121,7 +121,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
       <div class="seg" role="group" aria-label="Start" id="s-seg">
         <button data-v="cg" aria-pressed="true">Carn Goedog</button><button data-v="rf" aria-pressed="false">Craig Rhos-y-felin</button>
       </div>
-      <small>Carn Goedog is on the ridge at about 290 m, 9 km from the sea at Newport Bay. Craig Rhos-y-felin is in the valley below at about 80 m, 6 km from the same bay. Both give the same switch between sea and land. Only Rhos-y-felin, being lower and nearer the north coast, sends cheap water (0.2 ×) north round St David’s Head.</small>
+      <small>Carn Goedog is on the ridge (~290 m), about 9 km from Newport Bay. Craig Rhos-y-felin is lower in the valley (~80 m), about 6 km from the same bay. They usually agree. At cheap water, Rhos-y-felin can go north round St David’s Head; Carn Goedog walks south to Carmarthen Bay.</small>
     </div>
     <div class="ctl">
       <label for="m">Water cost per km <output id="m-out">1 ×</output></label>
@@ -134,21 +134,21 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
       <div class="seg" role="group" aria-label="Charge for each loading or landing" id="t-seg">
         <button data-v="0" aria-pressed="false">None</button><button data-v="10" aria-pressed="false">10 km</button><button data-v="25" aria-pressed="true">25 km</button><button data-v="50" aria-pressed="false">50 km</button>
       </div>
-      <small>Charged in km of flat-ground hauling, every time the load goes onto or off water.</small>
+      <small>A one-off charge, in km of flat hauling, each time the load goes on or off the water.</small>
     </div>
     <div class="ctl">
       <label>Climb penalty</label>
       <div class="seg" role="group" aria-label="Climb penalty" id="c-seg">
         <button data-v="2" aria-pressed="false">Light (2)</button><button data-v="4" aria-pressed="true">Standard (4)</button><button data-v="8" aria-pressed="false">Heavy (8)</button>
       </div>
-      <small>Extra cost per metre climbed, in metres of flat ground. Descent costs 0.65 of this.</small>
+      <small>Extra cost per metre climbed, counted in metres of flat ground. Descent costs about two-thirds as much.</small>
     </div>
     <div class="ctl">
       <label>Keep close to land</label>
       <div class="seg" role="group" aria-label="Keep close to land" id="k-seg">
         <button data-v="open" aria-pressed="false">Open sea</button><button data-v="sight" aria-pressed="true">In sight of land</button><button data-v="near" aria-pressed="false">Within 2 km</button>
       </div>
-      <small>Tests Atkinson’s assumption that boats hugged the coast. “In sight” keeps sea where land shows above the horizon from a boat.</small>
+      <small>Open sea, or stay where land shows on the horizon, or stay within 2 km of shore.</small>
     </div>
     <button class="btn" id="reset">Reset to defaults</button>
   </aside>
@@ -158,12 +158,12 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
   <section class="card">
     <h2>Reading the result</h2>
     <ul>
-      <li>The defaults are water at 1 × flat ground, a 25 km charge for each loading or landing, the standard climb penalty and boats kept in sight of land. The cheapest route then stays on land by Llandovery, Brecon and Monmouth, round the head of the Severn estuary: the A40 corridor. Water has to be about 20 % cheaper than flat ground before the sea wins.</li>
-      <li>Remove the loading charge and the balance point moves to about 1 × flat ground (1.03 in finer runs). Sea and land routes are then both about 239 km long, so the hills barely count. Just above that point the cheapest “land” route hops the estuaries along the south Wales coast.</li>
-      <li>With no loading charge and water at 2 to 5 ×, the route follows the Tywi, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
-      <li>Keeping in sight of land changes nothing. Only a 2 km limit moves the switch.</li>
-      <li>The two outcrops agree in 466 of 468 settings. The difference is at cheap water: from low-lying Craig Rhos-y-felin the route goes north round St David’s Head at 0.2 ×, where from Carn Goedog it walks south to Carmarthen Bay.</li>
-      <li>The route rounds Land’s End only when water costs about a tenth of flat ground or less.</li>
+      <li>Defaults (water = flat, 25 km loading charge, standard climb, boats in sight of land): all inland — Llandovery, Brecon, Monmouth, round the Severn head. The A40 line. Sea only wins once water is roughly a fifth cheaper than walking.</li>
+      <li>Drop the loading charge and sea and land tip at about equal cost per km (about 1.03 in finer runs). Both routes are ~239 km; the hills barely decide it. Just above that, the “land” path still hops the south Wales estuaries.</li>
+      <li>No loading charge, water 2–5× dearer: Tywi, across the coalfield to Newport, then a short Severn ferry at Beachley–Aust.</li>
+      <li>Staying in sight of land barely changes the answer. A hard 2 km limit does.</li>
+      <li>The two outcrops match in 466 of 468 settings. The odd cases are cheap water: Rhos-y-felin north round St David’s Head; Carn Goedog south to Carmarthen Bay.</li>
+      <li>Land’s End only when water is about a tenth of flat ground or cheaper.</li>
     </ul>
   </section>
   <section class="card">
@@ -171,7 +171,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
     <div class="formula">overland   d + c × climb + 0.65c × descent
 on water   m × d
 loading    + T each time onto or off water</div>
-    <p><em>d</em> is horizontal distance in metres, <em>c</em> the climb penalty, <em>m</em> the water cost and <em>T</em> the loading charge. The terrain is OS Terrain 50 on a 200 m grid; sea is every cell mostly below 0 m OD. Each route is the cheapest path found by Dijkstra’s algorithm, solved in advance with the project’s Python model.</p>
+    <p><em>d</em> is distance in metres, <em>c</em> the climb penalty, <em>m</em> the water multiplier and <em>T</em> the loading charge. OS Terrain 50 at 200 m; sea = cells mostly below 0 m OD. Cheapest path by Dijkstra, solved offline.</p>
   </section>
   <section class="card">
     <h2>What the model leaves out</h2>
@@ -181,7 +181,7 @@ loading    + T each time onto or off water</div>
       <li>Vegetation, woodland and wetland. Terrain 50 is today’s surface.</li>
       <li>Soft or flooded valley floors, and the cost of crossing rivers. River valleys still attract routes because they are flat.</li>
       <li>Mid-Holocene sea level. It was already within a few metres of present, and on these steep coasts that barely moves the shoreline at this grain.</li>
-      <li>Any claim that the cheapest route is the one used.</li>
+      <li>And it does not claim the cheapest route is the one used.</li>
     </ul>
     <p>Protocol, amendments, scripts and every run: <a href="https://github.com/TimDaw37/bluestone-sea-dial" target="_blank" rel="noopener">bluestone-sea-dial repository</a>. Background: <a href="https://www.sarsen.org/2025/07/natural-route-analysis-of-possible.html" target="_blank" rel="noopener">natural route analysis</a> and <a href="https://www.sarsen.org/2024/04/the-natural-corridor-for-bluestones.html" target="_blank" rel="noopener">the natural corridor for bluestones</a>.</p>
   </section>
@@ -236,9 +236,9 @@ function sync(){
   const regs = L.dials.m.map((_,i)=>regimeOf(L.routes[key(i)].wf)[0]);
   $('strip').innerHTML = regs.map((r,i)=>`<span class="${r}${i===state.mi?' on':''}"></span>`).join('');
   const lastSea = regs.lastIndexOf('sea'), firstLand = regs.indexOf('land');
-  let say = m<1 ? `Water costs ${fm(m)} of flat ground per km.` : m===1 ? 'Water costs the same as flat ground per km.' : `Water costs ${fm(m)} times flat ground per km.`;
-  if (lastSea>=0 && firstLand>lastSea) say += ` With these settings the route keeps to the sea up to ${fm(L.dials.m[lastSea])} × and goes overland from ${fm(L.dials.m[firstLand])} ×.`;
-  else if (lastSea<0) say += ' With these settings no route takes to the sea.';
+  let say = m===1 ? 'Water costs the same as walking on the flat.' : `Water costs ${fm(m)}× walking on the flat.`;
+  if (lastSea>=0 && firstLand>lastSea) say += ` Sea wins up to ${fm(L.dials.m[lastSea])}×; land from ${fm(L.dials.m[firstLand])}×.`;
+  else if (lastSea<0) say += ' No sea route under these settings.';
   $('m-say').textContent = say;
   show(); draw();
 }
