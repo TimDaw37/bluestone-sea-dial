@@ -125,7 +125,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
     <div class="ctl">
       <label>Charge for each loading or landing</label>
       <div class="seg" role="group" aria-label="Charge for each loading or landing" id="t-seg">
-        <button data-v="0" aria-pressed="true">None</button><button data-v="10" aria-pressed="false">10 km</button><button data-v="25" aria-pressed="false">25 km</button><button data-v="50" aria-pressed="false">50 km</button>
+        <button data-v="0" aria-pressed="false">None</button><button data-v="10" aria-pressed="false">10 km</button><button data-v="25" aria-pressed="true">25 km</button><button data-v="50" aria-pressed="false">50 km</button>
       </div>
       <small>Charged in km of flat-ground hauling, every time the load goes onto or off water.</small>
     </div>
@@ -139,11 +139,11 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
     <div class="ctl">
       <label>Keep close to land</label>
       <div class="seg" role="group" aria-label="Keep close to land" id="k-seg">
-        <button data-v="open" aria-pressed="true">Open sea</button><button data-v="sight" aria-pressed="false">In sight of land</button><button data-v="near" aria-pressed="false">Within 2 km</button>
+        <button data-v="open" aria-pressed="false">Open sea</button><button data-v="sight" aria-pressed="true">In sight of land</button><button data-v="near" aria-pressed="false">Within 2 km</button>
       </div>
       <small>Tests Atkinson’s assumption that boats hugged the coast. “In sight” keeps sea where land shows above the horizon from a boat.</small>
     </div>
-    <button class="btn" id="reset">Reset to protocol settings</button>
+    <button class="btn" id="reset">Reset to defaults</button>
   </aside>
 </div>
 
@@ -151,9 +151,9 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
   <section class="card">
     <h2>Reading the result</h2>
     <ul>
-      <li>With the protocol settings (no loading charge, climb penalty 4) the route takes to sea up to a water cost of 1 × flat ground and goes overland from 1.1 ×. Finer runs put the switch at 1.03. Sea and land routes are both about 239 km long, so the hills barely count.</li>
-      <li>At 2 to 5 × the route follows the Tywi, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
-      <li>A 25 km loading charge sends the land route by Llandovery, Brecon and Monmouth, round the head of the Severn estuary. Water then has to be about 20 % cheaper than flat ground to win.</li>
+      <li>The defaults are water at 1 × flat ground, a 25 km charge for each loading or landing, the standard climb penalty and boats kept in sight of land. The cheapest route then stays on land by Llandovery, Brecon and Monmouth, round the head of the Severn estuary: the A40 corridor. Water has to be about 20 % cheaper than flat ground before the sea wins.</li>
+      <li>Remove the loading charge and the balance point moves to about 1 × flat ground (1.03 in finer runs). Sea and land routes are then both about 239 km long, so the hills barely count. Just above that point the cheapest “land” route hops the estuaries along the south Wales coast.</li>
+      <li>With no loading charge and water at 2 to 5 ×, the route follows the Tywi, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
       <li>Keeping in sight of land changes nothing. Only a 2 km limit moves the switch.</li>
       <li>The route rounds Land’s End only when water costs about a tenth of flat ground or less.</li>
     </ul>
@@ -194,7 +194,7 @@ const PLACES = [
   ['Brecon',304,228],['Abergavenny',330,214],['Monmouth',351,213],['Cardiff',318,176],['Newport',331,188],
   ['Gloucester',383,218],['Bristol',359,173],['Avonmouth',351,178],['Weston-super-Mare',332,161],['Bath',375,165],['Warminster',387,145],
   ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112],['Pendine',225,208]];
-const PROTOCOL = {mi:7, t:0, c:4, coast:'open'};
+const PROTOCOL = {mi:7, t:25, c:4, coast:'sight'};   // page defaults (Tim, 5 Oct 2026)
 const state = Object.assign({view:'wessex', all:false}, PROTOCOL);
 let L = null;
 const $ = id => document.getElementById(id);
