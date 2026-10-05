@@ -78,13 +78,18 @@ dl.stats dt{color:var(--muted)} dl.stats dd{margin:0;font:500 13.5px var(--mono)
 a{color:var(--accent)}
 footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule);padding-top:12px;display:grid;gap:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.strip{display:flex;gap:2px;margin:2px 7px 0}
+.strip span{flex:1;height:7px;border-radius:2px;opacity:.75}
+.strip span.sea{background:var(--sea)} .strip span.land{background:var(--land)} .strip span.mix{background:var(--warn)}
+.strip span.on{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
+.mapbar label{font-size:13px;color:var(--ink)}
+.notes{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
 </style>
-
 <div class="wrap">
 <header>
-  <div class="eyebrow">Preseli → Stonehenge · least-cost sensitivity model · OS Terrain 50</div>
+  <div class="eyebrow">Preseli → Stonehenge · least-cost routes · OS Terrain 50</div>
   <h1>Bluestone sea dial</h1>
-  <p class="lede">Set how much it costs to move a load one kilometre by water, relative to one kilometre over flat ground, and the model finds the cheapest route from the Preseli outcrops to Stonehenge across real terrain. It is a test of assumptions, not a reconstruction of what happened.</p>
+  <p class="lede">How much does it cost to move a load one kilometre by water, compared with one kilometre over flat ground? Set the dials and the map shows the cheapest route from Carn Goedog to Stonehenge across real terrain, chosen from 468 solved routes. It tests assumptions; it does not reconstruct what happened.</p>
 </header>
 
 <div class="main">
@@ -95,125 +100,75 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
         <button id="v-wessex" aria-pressed="true">Wales–Wessex</button>
         <button id="v-full" aria-pressed="false">Whole frame</button>
       </div>
-      <span>Click the map to move the start (outside the protocol)</span>
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="all"> Show all routes</label>
     </div>
     <canvas id="map" width="1320" height="860" role="img" aria-label="Relief map of south Wales and south-west England with the least-cost route drawn"></canvas>
     <div class="legend">
       <span><i style="border-color:var(--land)"></i>overland</span>
       <span><i style="border-color:var(--sea)"></i>on water</span>
-      <span><i style="border-color:var(--ghost);border-top-style:dashed"></i>pinned route</span>
-      <span>● transfer to or from water</span>
+      <span>● onto or off water</span>
       <span><i style="border-top:9px solid rgba(28,38,48,.45);width:16px"></i>closed sea</span>
     </div>
   </section>
-  <section class="card readout" style="margin-top:0" aria-live="polite">
+  <section class="card readout" aria-live="polite">
     <div class="row" style="justify-content:space-between;align-items:center">
       <h2 style="margin:0">This route</h2>
-      <span id="regime" class="chip mix">computing</span>
+      <span id="regime" class="chip mix">loading</span>
     </div>
     <dl class="stats" id="stats"></dl>
-    <div class="row">
-      <button class="btn" id="pin">Pin this route</button>
-      <button class="btn" id="unpin">Clear pin</button>
-    </div>
-    <div class="status" id="status">Loading terrain…</div>
+    <div class="status" id="status">Loading routes…</div>
   </section>
   </div>
+
   <aside class="panel" aria-label="Model dials">
     <div class="ctl">
-      <label for="m">Water cost per km <output id="m-out">1.00 ×</output></label>
-      <input id="m" type="range" min="0" max="1000" step="1" value="500">
-      <small>Multiple of the cost of one km over flat ground. Below 1, water is cheaper than flat land.</small>
+      <label for="m">Water cost per km <output id="m-out">1 ×</output></label>
+      <input id="m" type="range" min="0" max="12" step="1" value="7">
+      <div id="strip" class="strip" aria-hidden="true"></div>
+      <small id="m-say"></small>
     </div>
     <div class="ctl">
-      <label for="t">Cost of each embark or landing <output id="t-out">0 km</output></label>
-      <input id="t" type="range" min="0" max="80" step="1" value="0">
-      <small>Fixed charge, in flat-ground km, every time the load goes onto or off water.</small>
-    </div>
-    <div class="ctl">
-      <label for="wup">Climb penalty <output id="wup-out">4.0</output></label>
-      <input id="wup" type="range" min="0" max="40" step="1" value="8">
-      <small>Extra cost per metre climbed, in metres of flat ground. Descent is charged at 0.65 of this.</small>
-    </div>
-    <div class="ctl">
-      <label>Steepest slope allowed</label>
-      <div class="seg" role="group" aria-label="Steepest slope allowed" id="g-seg">
-        <button data-v="0" aria-pressed="true">Any</button><button data-v="0.15" aria-pressed="false">1 in 7</button><button data-v="0.10" aria-pressed="false">1 in 10</button><button data-v="0.05" aria-pressed="false">1 in 20</button>
+      <label>Charge for each loading or landing</label>
+      <div class="seg" role="group" aria-label="Charge for each loading or landing" id="t-seg">
+        <button data-v="0" aria-pressed="true">None</button><button data-v="10" aria-pressed="false">10 km</button><button data-v="25" aria-pressed="false">25 km</button><button data-v="50" aria-pressed="false">50 km</button>
       </div>
+      <small>Charged in km of flat-ground hauling, every time the load goes onto or off water.</small>
+    </div>
+    <div class="ctl">
+      <label>Climb penalty</label>
+      <div class="seg" role="group" aria-label="Climb penalty" id="c-seg">
+        <button data-v="2" aria-pressed="false">Light (2)</button><button data-v="4" aria-pressed="true">Standard (4)</button><button data-v="8" aria-pressed="false">Heavy (8)</button>
+      </div>
+      <small>Extra cost per metre climbed, in metres of flat ground. Descent costs 0.65 of this.</small>
     </div>
     <div class="ctl">
       <label>Keep close to land</label>
       <div class="seg" role="group" aria-label="Keep close to land" id="k-seg">
-        <button data-v="none" aria-pressed="true">No limit</button><button data-v="sight" aria-pressed="false">In sight</button><button data-v="d20" aria-pressed="false">20 km</button><button data-v="d10" aria-pressed="false">10 km</button><button data-v="d5" aria-pressed="false">5 km</button><button data-v="d2" aria-pressed="false">2 km</button>
+        <button data-v="open" aria-pressed="true">Open sea</button><button data-v="sight" aria-pressed="false">In sight of land</button><button data-v="near" aria-pressed="false">Within 2 km</button>
       </div>
-      <small>Tests Atkinson’s coast-hugging assumption. “In sight” keeps sea where some land shows above the horizon from a boat (eye 2 m): 3.57 × (√2 + √H) km for land H m high. The km settings close sea farther than that from the nearest land. The whole coast is open, so a route can round St David’s Head or Land’s End; north-about routes win only when water costs about 0.15 × flat ground or less.</small>
+      <small>Tests Atkinson’s assumption that boats hugged the coast. “In sight” keeps sea where land shows above the horizon from a boat.</small>
     </div>
-    <div class="ctl">
-      <label>Major rivers</label>
-      <div class="seg" role="group" aria-label="Major rivers" id="r-seg">
-        <button data-v="ignore" aria-pressed="true">Ignore</button><button data-v="conduit" aria-pressed="false">Waterways</button><button data-v="barrier" aria-pressed="false">Barriers</button>
-      </div>
-    </div>
-    <div class="ctl">
-      <label>Start</label>
-      <div class="seg" role="group" aria-label="Start" id="s-seg">
-        <button data-v="cg" aria-pressed="true">Carn Goedog</button><button data-v="rf" aria-pressed="false">Craig Rhos-y-felin</button>
-      </div>
-    </div>
-    <div class="ctl">
-      <label>Grid and moves</label>
-      <div class="row">
-        <div class="seg" role="group" aria-label="Grid" id="cell-seg"><button data-v="400" aria-pressed="true">400 m</button><button data-v="200" aria-pressed="false">200 m</button></div>
-        <div class="seg" role="group" aria-label="Neighbours" id="n-seg"><button data-v="8" aria-pressed="true">8 moves</button><button data-v="16" aria-pressed="false">16 moves</button></div>
-      </div>
-      <small>200 m matches passes 1–2 and takes a few seconds per route. 16 moves cuts the grid’s direction bias from 8 % to under 3 %.</small>
-    </div>
-    <div class="ctl">
-      <h3>Presets</h3>
-      <div class="presets">
-        <button class="btn" data-preset="locked">Protocol settings</button>
-        <button class="btn" data-preset="landing">Landing cost 25 km</button>
-        <button class="btn" data-preset="lands">Very cheap water, whole coast</button>
-        <button class="btn" data-preset="hauling">Steep-averse hauling</button>
-        <button class="btn" data-preset="atkinson">Cheap water, within 5 km of land</button>
-      </div>
-    </div>
+    <button class="btn" id="reset">Reset to protocol settings</button>
   </aside>
-</div>
-
-<div class="lower" style="grid-template-columns:1fr">
-
-  <section class="card">
-    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
-      <h2 style="margin:0">Where the route switches</h2>
-      <button class="btn primary" id="sweep">Run the sweep</button>
-    </div>
-    <p style="margin:0 0 8px;color:var(--muted);font-size:13.5px">Share of the route on water as the water cost rises, with every other dial held where it is now. The switch is the first water cost at which the route is inland-preferring (water ≤ 10 % of its length).</p>
-    <svg id="chart" viewBox="0 0 900 270" role="img" aria-label="Water share of the route against water cost"></svg>
-    <div class="status" id="sweep-status"></div>
-  </section>
 </div>
 
 <div class="notes">
   <section class="card">
-    <h2>How the cost works</h2>
-    <p>The terrain is OS Terrain 50 averaged onto a 400 m or 200 m grid. Each move to a neighbouring cell is charged:</p>
-    <div class="formula">overland   d + c × climb + 0.65c × descent
-on water   m × d
-transfer   + T at every land↔water step</div>
-    <p>Here <em>d</em> is the horizontal distance in metres, <em>c</em> is the climb penalty and <em>m</em> the water cost. With the steepest-slope setting at “Any” the overland charge depends only on how far and how much up and down, not on how steep. A 50 m climb costs the same up a cliff as up a long ramp. Setting a maximum slope closes the steeper moves.</p>
-    <p>Sea is every cell where most Terrain 50 posts are below 0 m OD or there are no posts offshore. The cheapest route is found with Dijkstra’s algorithm, run in your browser.</p>
-  </section>
-  <section class="card">
     <h2>Reading the result</h2>
     <ul>
-      <li>With the protocol settings (no transfer cost, climb penalty 4) the switch sits close to <strong>m ≈ 1.03</strong>. Sea wins when moving a load on water costs about the same as on flat ground or less. The sea and land routes are almost the same length, so the terrain contributes only a few per cent.</li>
-      <li>Without a transfer cost, the “inland” winner at the switch keeps to the south Wales coastal plain, crosses estuaries, and ferries over the Severn from Cardiff to Weston-super-Mare.</li>
-      <li>Make water dearer (2 to 10 × flat ground) and the route follows the Tywi to Llandeilo, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
-      <li>Charge 25 km per embark or landing and the inland route avoids water altogether. It follows the Tywi to Llandovery, Brecon and Monmouth, and goes round the head of the Severn estuary. The switch falls to m ≈ 0.8.</li>
-      <li>Keeping within sight of land changes nothing, and limits of 20 or 10 km leave the switch where it is. Only a 2 km limit lowers it, to about 0.95.</li>
-      <li>Very cheap water sends the route round Land’s End. That route needs water at about a twentieth of the flat-ground cost.</li>
+      <li>With the protocol settings (no loading charge, climb penalty 4) the route takes to sea up to a water cost of 1 × flat ground and goes overland from 1.1 ×. Finer runs put the switch at 1.03. Sea and land routes are both about 239 km long, so the hills barely count.</li>
+      <li>At 2 to 5 × the route follows the Tywi, crosses the coalfield valleys to Newport and takes a 3.5 km ferry over the Severn at Beachley–Aust.</li>
+      <li>A 25 km loading charge sends the land route by Llandovery, Brecon and Monmouth, round the head of the Severn estuary. Water then has to be about 20 % cheaper than flat ground to win.</li>
+      <li>Keeping in sight of land changes nothing. Only a 2 km limit moves the switch.</li>
+      <li>The route rounds Land’s End only when water costs about a tenth of flat ground or less.</li>
     </ul>
+  </section>
+  <section class="card">
+    <h2>How the cost works</h2>
+    <div class="formula">overland   d + c × climb + 0.65c × descent
+on water   m × d
+loading    + T each time onto or off water</div>
+    <p><em>d</em> is horizontal distance in metres, <em>c</em> the climb penalty, <em>m</em> the water cost and <em>T</em> the loading charge. The terrain is OS Terrain 50 on a 200 m grid; sea is every cell mostly below 0 m OD. Each route is the cheapest path found by Dijkstra’s algorithm, solved in advance with the project’s Python model. The second outcrop, Craig Rhos-y-felin, gives the same switch.</p>
   </section>
   <section class="card">
     <h2>What the model leaves out</h2>
@@ -224,381 +179,156 @@ transfer   + T at every land↔water step</div>
       <li>Mid-Holocene sea level. By c. 3000 BC relative sea level here was already within a few metres of present, not the tens of metres of the early Holocene. The coasts these routes use are mostly steep, so a few metres of vertical change barely moves the shoreline at Terrain 50 grain. The low Severn levels near Avonmouth and Weston are the exception, where the tidal edge may have lain some way inland of today’s.</li>
       <li>Any claim that the cheapest route is the one used.</li>
     </ul>
-    <p>The protocol, amendments and every run are in the <a href="https://github.com/TimDaw37/bluestone-sea-dial" target="_blank" rel="noopener">bluestone-sea-dial repository</a>. Background posts: <a href="https://www.sarsen.org/2025/07/natural-route-analysis-of-possible.html" target="_blank" rel="noopener">natural route analysis</a> and <a href="https://www.sarsen.org/2024/04/the-natural-corridor-for-bluestones.html" target="_blank" rel="noopener">the natural corridor for bluestones</a>.</p>
+    <p>Protocol, amendments, scripts and every run: <a href="https://github.com/TimDaw37/bluestone-sea-dial" target="_blank" rel="noopener">bluestone-sea-dial repository</a>. Background: <a href="https://www.sarsen.org/2025/07/natural-route-analysis-of-possible.html" target="_blank" rel="noopener">natural route analysis</a> and <a href="https://www.sarsen.org/2024/04/the-natural-corridor-for-bluestones.html" target="_blank" rel="noopener">the natural corridor for bluestones</a>.</p>
   </section>
 </div>
 
 <footer>
-  <span>Contains OS data © Crown copyright and database right 2026. OS Terrain 50 and OS Open Rivers, Open Government Licence v3.0.</span>
+  <span>Contains OS data © Crown copyright and database right 2026. OS Terrain 50, Open Government Licence v3.0.</span>
   <span>Model and page: Tim Daw, sarsen.org. Use freely with attribution.</span>
 </footer>
 </div>
 
-<script id="worker-src" type="text/plain">
-// ---- least-cost worker (same rule as model/engine.py) ----
-const G = {};
-const XMIN = 120000, YMAX = 260000, WEST_LIMIT = 200000, BARRIER = 100;
-const END = [412250, 142200];
-function prepare(g, p){
-  const {W,H,cell,z,fl,dq} = g, N = W*H;
-  const westCol = Math.floor((WEST_LIMIT - XMIN)/cell);
-  const rule = p.coastRule || 'none', lim = rule.startsWith('d') ? 4*Number(rule.slice(1)) : 0;
-  const water = new Uint8Array(N), dead = new Uint8Array(N), riv = new Uint8Array(N), ze = new Float32Array(N);
-  for (let i=0;i<N;i++){
-    const s = fl[i]&1, r = (fl[i]&2) && !s;
-    riv[i] = r ? 1 : 0;
-    if (s){
-      const shut = (p.coast==='bristol' && (i%W) < westCol) || (rule==='sight' && !(fl[i]&4)) || (lim>0 && dq[i]>lim);
-      if (shut) dead[i]=1; else water[i]=1; ze[i]=0; }
-    else { if (z[i]===-32768) dead[i]=1; ze[i]=z[i]/10; if (r && p.rivers==='conduit') water[i]=1; }
-  }
-  return {water,dead,riv,ze};
-}
-function landCell(g, pre, x, y){
-  const {W,H,cell} = g;
-  let r = Math.floor((YMAX - y)/cell), c = Math.floor((x - XMIN)/cell);
-  for (let rad=0; rad<40; rad++){
-    for (let dr=-rad; dr<=rad; dr++) for (let dc=-rad; dc<=rad; dc++){
-      if (Math.max(Math.abs(dr),Math.abs(dc))!==rad) continue;
-      const rr=r+dr, cc=c+dc;
-      if (rr<0||cc<0||rr>=H||cc>=W) continue;
-      const i = rr*W+cc;
-      if (!pre.dead[i] && !pre.water[i]) return i;
-    }
-  }
-  return -1;
-}
-const N8 = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
-const N16 = N8.concat([[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]]);
-function run(p, preCache){
-  const g = G[p.cell]; const {W,H,cell} = g; const N=W*H;
-  const pre = preCache || prepare(g,p);
-  const {water,dead,riv,ze} = pre;
-  const s = landCell(g,pre,p.start[0],p.start[1]), e = landCell(g,pre,END[0],END[1]);
-  const moves = (p.nbr===16?N16:N8).map(([dr,dc])=>{
-    const knight = Math.abs(dr)+Math.abs(dc)===3;
-    let m1=null,m2=null;
-    if (knight){ const sr = Math.abs(dr)===2? Math.sign(dr):0, sc = Math.abs(dc)===2? Math.sign(dc):0; m1=[sr,sc]; m2=[dr-sr,dc-sc]; }
-    return {dr,dc,d:cell*Math.hypot(dr,dc),knight,m1,m2};
-  });
-  const dist = new Float64Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1);
-  let cap = 1<<16, hk = new Float64Array(cap), hv = new Int32Array(cap), hn = 0;
-  const push=(k,v)=>{ if(hn>=cap){cap*=2; const a=new Float64Array(cap); a.set(hk); hk=a; const b=new Int32Array(cap); b.set(hv); hv=b;}
-    let i=hn++; while(i>0){const q=(i-1)>>1; if(hk[q]<=k)break; hk[i]=hk[q]; hv[i]=hv[q]; i=q;} hk[i]=k; hv[i]=v; };
-  const pop=()=>{ const k0=hk[0], v0=hv[0]; const k=hk[--hn], v=hv[hn]; let i=0;
-    for(;;){ let l=2*i+1; if(l>=hn)break; if(l+1<hn && hk[l+1]<hk[l]) l++; if(hk[l]>=k)break; hk[i]=hk[l]; hv[i]=hv[l]; i=l; }
-    hk[i]=k; hv[i]=v; popK=k0; return v0; };
-  let popK = 0;
-  dist[s]=0; push(0,s);
-  const m=p.m, T=p.T, wup=p.wup, wdn=p.wdn, gmax=p.gmax, barrier=p.rivers==='barrier';
-  while(hn>0){
-    const a = pop(); const da = popK;
-    if (da>dist[a]) continue;
-    if (a===e) break;
-    const ra=(a/W)|0, ca=a-ra*W, wa=water[a], za=ze[a];
-    for (let k=0;k<moves.length;k++){
-      const mv=moves[k], rb=ra+mv.dr, cb=ca+mv.dc;
-      if (rb<0||cb<0||rb>=H||cb>=W) continue;
-      const b=rb*W+cb; if (dead[b]) continue;
-      if (mv.knight){ if (dead[(ra+mv.m1[0])*W+ca+mv.m1[1]] || dead[(ra+mv.m2[0])*W+ca+mv.m2[1]]) continue; }
-      const wb=water[b], d=mv.d; let c;
-      if (wb) c = m*d;
-      else {
-        const dz = ze[b]-za;
-        if (gmax>0 && !wa && Math.abs(dz)/d>gmax) continue;
-        c = barrier && riv[b] ? BARRIER*d : d + (dz>0? wup*dz : -wdn*dz);
-      }
-      if (T>0 && wa!==wb) c += T;
-      const nd = da + c;
-      if (nd < dist[b]){ dist[b]=nd; prev[b]=a; push(nd,b); }
-    }
-  }
-  if (!isFinite(dist[e])) return null;
-  const path=[]; for(let i=e;i!==-1;i=prev[i]) path.push(i); path.reverse();
-  const xy = new Float32Array(path.length*2), wflag = new Uint8Array(path.length);
-  let len=0, wlen=0, climb=0, desc=0; const transfers=[];
-  for (let i=0;i<path.length;i++){
-    const q=path[i], r=(q/W)|0, c=q-r*W;
-    xy[2*i]=XMIN+(c+.5)*cell; xy[2*i+1]=YMAX-(r+.5)*cell; wflag[i]=water[q];
-    if (i>0){
-      const pq=path[i-1], pr=(pq/W)|0, pc=pq-pr*W, d=cell*Math.hypot(r-pr,c-pc);
-      len+=d; if (water[q]) wlen+=d; else { const dz=ze[q]-ze[pq]; if(dz>0)climb+=dz; else desc-=dz; }
-      if (water[q]!==water[pq]) transfers.push([xy[2*i],xy[2*i+1], water[q]?1:0]);
-    }
-  }
-  return {cost:dist[e], len, wlen, wf: wlen/len, climb, desc, transfers, xy, wflag};
-}
-function strip(r){ return r && {cost:r.cost,len:r.len,wlen:r.wlen,wf:r.wf}; }
-onmessage = (ev)=>{
-  const msg = ev.data;
-  if (msg.type==='grid'){ G[msg.cell]=msg.grid; postMessage({type:'gridok',cell:msg.cell}); return; }
-  const p = msg.p, pre = prepare(G[p.cell], p);
-  if (msg.type==='run'){
-    const r = run(p, pre);
-    const g = G[p.cell], N = g.W*g.H, shut = new Uint8Array(N);
-    for (let i=0;i<N;i++) shut[i] = (g.fl[i]&1) && pre.dead[i] ? 1 : 0;
-    const mask = {W:g.W, H:g.H, shut};
-    postMessage({type:'route', id:msg.id, r, mask}, (r? [r.xy.buffer, r.wflag.buffer] : []).concat([shut.buffer]));
-  } else if (msg.type==='sweep'){
-    const ms = [0.05,0.07,0.1,0.15,0.2,0.3,0.5,0.7,0.85,1,1.15,1.3,1.5,2,3,5,10,20,50];
-    const pts=[];
-    for (let i=0;i<ms.length;i++){ const r=run(Object.assign({},p,{m:ms[i]}),pre); pts.push(Object.assign({m:ms[i]},strip(r)));
-      postMessage({type:'progress', id:msg.id, done:i+1, of:ms.length+8}); }
-    // bisection for the switch: smallest m with wf <= 0.10
-    let sw=null, lastSea=null;
-    const wf = m => { const r=run(Object.assign({},p,{m}),pre); return r? r.wf : 1; };
-    if (pts[pts.length-1].wf<=0.10 && pts[0].wf>0.10){
-      let a=0.05,b=50; for (const q of pts){ if (q.wf>0.10) a=Math.max(a,q.m); }
-      for (const q of pts){ if (q.wf<=0.10 && q.m>a){ b=q.m; break; } }
-      let n=0; while (b/a>1.005 && n<14){ const mid=Math.sqrt(a*b); if (wf(mid)<=0.10) b=mid; else a=mid; n++;
-        postMessage({type:'progress', id:msg.id, done:ms.length+Math.min(n,8), of:ms.length+8}); }
-      sw=b;
-    }
-    for (const q of pts) if (q.wf>=0.25) lastSea=q.m;
-    postMessage({type:'sweep', id:msg.id, pts, sw, lastSea});
-  }
-};
-</script>
-
 <script>
 (()=>{
-const START = {cg:[212878,233160,'Carn Goedog'], rf:[211650,236140,'Craig Rhos-y-felin']};
-const END = [412250,142200];
+const START = [212878,233160,'Carn Goedog'], END = [412250,142200];
 const FRAME = {xmin:120000,xmax:450000,ymin:10000,ymax:260000};
 const VIEWS = {wessex:{xmin:170000,xmax:440000,ymin:110000,ymax:262000}, full:FRAME};
 const PLACES = [
   ['Milford Haven',190,206],['Tenby',213,200],['Carmarthen',241,220],['Swansea',265,193],['Llandovery',276,234],
   ['Brecon',304,228],['Abergavenny',330,214],['Monmouth',351,213],['Cardiff',318,176],['Newport',331,188],
-  ['Gloucester',383,218],['Bristol',359,173],['Weston-super-Mare',332,161],['Bath',375,165],['Warminster',387,145],
-  ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112]];
-const state = {m:1, T:0, wup:4, gmax:0, coast:'full', coastRule:'none', rivers:'ignore', start:'cg', custom:null, cell:400, nbr:8, view:'wessex'};
-let route=null, pinned=null, sweep=null, gridsReady={}, reqId=0, latest=0, busy=false, pending=false;
+  ['Gloucester',383,218],['Bristol',359,173],['Avonmouth',351,178],['Weston-super-Mare',332,161],['Bath',375,165],['Warminster',387,145],
+  ['Barnstaple',256,133],['Exeter',292,92],['Plymouth',248,55],["Land's End",134,25],['Southampton',442,112],['Pendine',225,208]];
+const PROTOCOL = {mi:7, t:0, c:4, coast:'open'};
+const state = Object.assign({view:'wessex', all:false}, PROTOCOL);
+let L = null;
 const $ = id => document.getElementById(id);
 const canvas = $('map'), ctx = canvas.getContext('2d');
 const relief = new Image(); relief.src = 'data/relief.jpg'; relief.onload = draw;
-
-// --- dials ---
-const mFromSlider = v => 0.05*Math.pow(1000, v/1000);       // 0.05 .. 50, log
-const sliderFromM = m => Math.round(1000*Math.log(m/0.05)/Math.log(1000));
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-function syncLabels(){
-  $('m-out').textContent = state.m.toFixed(state.m<0.1?3:2)+' ×';
-  $('t-out').textContent = state.T+' km';
-  $('wup-out').textContent = state.wup.toFixed(1);
-}
-$('m').addEventListener('input', e=>{ state.m = +mFromSlider(+e.target.value).toPrecision(3); syncLabels(); schedule(); });
-$('t').addEventListener('input', e=>{ state.T = +e.target.value; syncLabels(); schedule(); });
-$('wup').addEventListener('input', e=>{ state.wup = +e.target.value/2; syncLabels(); schedule(); });
-function seg(id, key, cast=v=>v){
-  const el=$(id);
-  el.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
-    state[key]=cast(b.dataset.v); if(key==='start') state.custom=null; setSeg(id, b.dataset.v); schedule(); });
-}
-function setSeg(id, v){ for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v===String(v))); }
-seg('g-seg','gmax',Number); seg('k-seg','coastRule'); seg('r-seg','rivers'); seg('s-seg','start'); seg('n-seg','nbr',Number);
-$('cell-seg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; state.cell=+b.dataset.v; setSeg('cell-seg',b.dataset.v); ensureGrid(state.cell).then(schedule); });
-for (const v of ['wessex','full']) $('v-'+v).addEventListener('click', ()=>{ state.view=v; setSeg2(); draw(); });
-function setSeg2(){ $('v-wessex').setAttribute('aria-pressed', String(state.view==='wessex')); $('v-full').setAttribute('aria-pressed', String(state.view==='full')); }
-const PRESETS = {
-  locked:{m:1,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
-  landing:{m:1,T:25,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
-  lands:{m:0.05,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'none'},
-  hauling:{m:1,T:10,wup:12,gmax:0.10,coast:'full',rivers:'ignore',nbr:16,coastRule:'none'},
-  atkinson:{m:0.5,T:0,wup:4,gmax:0,coast:'full',rivers:'ignore',nbr:8,coastRule:'d5'},
-};
-document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
-  Object.assign(state, PRESETS[b.dataset.preset]); applyState(); schedule(); }));
-function applyState(){
-  $('m').value = sliderFromM(state.m); $('t').value=state.T; $('wup').value=state.wup*2;
-  setSeg('g-seg',state.gmax); setSeg('k-seg',state.coastRule); setSeg('r-seg',state.rivers); setSeg('n-seg',state.nbr); setSeg('cell-seg',state.cell);
-  setSeg('s-seg', state.custom? '' : state.start); syncLabels();
-}
 
-// --- worker ---
-const worker = new Worker(URL.createObjectURL(new Blob([$('worker-src').textContent],{type:'text/javascript'})));
-const waiters = {};
-worker.onmessage = ev => {
-  const msg = ev.data;
-  if (msg.type==='gridok'){ gridsReady[msg.cell]=true; (waiters['g'+msg.cell]||[]).forEach(f=>f()); return; }
-  if (msg.type==='route'){
-    busy=false;
-    if (msg.id===latest){ route = msg.r; setMask(msg.mask); show(); draw(); }
-    if (pending){ pending=false; go(); }
-  }
-  if (msg.type==='progress') $('sweep-status').textContent = `Running ${msg.done} of ${msg.of} routes…`;
-  if (msg.type==='sweep'){ sweep = Object.assign({params:paramsKey()}, msg); $('sweep').disabled=false; drawChart();
-    $('sweep-status').textContent = msg.sw ? `Switch at m ≈ ${msg.sw.toFixed(2)}. Last sea-preferring point in the sweep: ${msg.lastSea ?? 'none'}.` : 'No switch between 0.05 and 50 with these settings.'; }
-};
-async function fetchGrid(cell){
-  const res = await fetch(`data/grid${cell}.b64.txt`);
-  if (!res.ok) throw new Error('fetch '+res.status);
-  const b64 = (await res.text()).trim();
-  const bin = atob(b64); let buf = new Uint8Array(bin.length);
-  for (let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
-  if (buf[0]===0x1f && buf[1]===0x8b){
-    const ds = new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip')));
-    buf = new Uint8Array(await ds.arrayBuffer());
-  }
-  const W = cell===400?825:1650, H = cell===400?625:1250, N=W*H;
-  const z = new Int16Array(buf.buffer.slice(0, 2*N)), fl = new Uint8Array(buf.buffer.slice(2*N, 3*N)), dq = new Uint8Array(buf.buffer.slice(3*N, 4*N));
-  return {W,H,cell,z,fl,dq};
+const pyNum = v => Number.isInteger(v) ? v.toFixed(1) : String(v);
+function key(mi){ return `${state.coast}|${state.c}|${state.t}|${pyNum(L.dials.m[mi ?? state.mi])}`; }
+function cur(){ return L && L.routes[key()]; }
+function regimeOf(wf){ return wf>=0.25?['sea','Sea-preferring']:wf<=0.10?['land','Inland-preferring']:['mix','Mixed']; }
+const fm = m => (m<0.1? m.toFixed(2) : m<1 ? String(+m.toFixed(2)) : String(m));
+
+// --- controls ---
+function seg(id, k, cast){ $(id).addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; state[k]=cast(b.dataset.v); sync(); }); }
+seg('t-seg','t',Number); seg('c-seg','c',Number); seg('k-seg','coast',String);
+$('m').addEventListener('input', e=>{ state.mi=+e.target.value; sync(); });
+$('all').addEventListener('change', e=>{ state.all=e.target.checked; draw(); });
+$('reset').addEventListener('click', ()=>{ Object.assign(state, PROTOCOL); sync(); });
+for (const v of ['wessex','full']) $('v-'+v).addEventListener('click', ()=>{ state.view=v; sync(); });
+function setSeg(id, v){ for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v===String(v))); }
+function sync(){
+  setSeg('t-seg',state.t); setSeg('c-seg',state.c); setSeg('k-seg',state.coast);
+  $('v-wessex').setAttribute('aria-pressed', String(state.view==='wessex')); $('v-full').setAttribute('aria-pressed', String(state.view==='full'));
+  $('m').value = state.mi;
+  if (!L) return;
+  const m = L.dials.m[state.mi];
+  $('m-out').textContent = fm(m)+' ×';
+  // regime strip along the slider, and the sentence under it
+  const regs = L.dials.m.map((_,i)=>regimeOf(L.routes[key(i)].wf)[0]);
+  $('strip').innerHTML = regs.map((r,i)=>`<span class="${r}${i===state.mi?' on':''}"></span>`).join('');
+  const lastSea = regs.lastIndexOf('sea'), firstLand = regs.indexOf('land');
+  let say = m<1 ? `Water costs ${fm(m)} of flat ground per km.` : m===1 ? 'Water costs the same as flat ground per km.' : `Water costs ${fm(m)} times flat ground per km.`;
+  if (lastSea>=0 && firstLand>lastSea) say += ` With these settings the route keeps to the sea up to ${fm(L.dials.m[lastSea])} × and goes overland from ${fm(L.dials.m[firstLand])} ×.`;
+  else if (lastSea<0) say += ' With these settings no route takes to the sea.';
+  $('m-say').textContent = say;
+  show(); draw();
 }
-const gridLoads = {};
-function ensureGrid(cell){
-  if (gridsReady[cell]) return Promise.resolve();
-  if (!gridLoads[cell]) gridLoads[cell] = new Promise(async (resolve, reject)=>{
-    try{
-      $('status').textContent = `Loading ${cell} m terrain…`;
-      const g = await fetchGrid(cell);
-      (waiters['g'+cell] = waiters['g'+cell] || []).push(resolve);
-      worker.postMessage({type:'grid', cell, grid:g}, [g.z.buffer, g.fl.buffer, g.dq.buffer]);
-    } catch(err){ $('status').textContent = 'Terrain did not load. Reload the page to try again.'; reject(err); }
-  });
-  return gridLoads[cell];
-}
-function params(){
-  const st = state.custom || START[state.start];
-  return {m:state.m, T:state.T*1000, wup:state.wup, wdn:0.65*state.wup, gmax:state.gmax, coast:state.coast,
-          rivers:state.rivers, start:[st[0],st[1]], cell:state.cell, nbr:state.nbr, coastRule:state.coastRule};
-}
-function paramsKey(){ const p=params(); delete p.m; return JSON.stringify(p); }
-let timer=null;
-function schedule(){ clearTimeout(timer); timer=setTimeout(go, 60); if (sweep && sweep.params!==paramsKey()) { sweep=null; drawChart(); $('sweep-status').textContent='Dials changed. Run the sweep again.'; } else drawChart(); }
-function go(){
-  if (!gridsReady[state.cell]) return ensureGrid(state.cell).then(go);
-  if (busy){ pending=true; return; }
-  busy=true; latest=++reqId; $('status').textContent='Finding the cheapest route…';
-  worker.postMessage({type:'run', id:latest, p:params()});
-}
-$('sweep').addEventListener('click', ()=>{ if(!gridsReady[state.cell]) return; $('sweep').disabled=true; $('sweep-status').textContent='Starting sweep…'; worker.postMessage({type:'sweep', id:++reqId, p:params()}); });
-$('pin').addEventListener('click', ()=>{ if(route) { pinned = {xy:route.xy.slice(), label:labelNow()}; draw(); } });
-$('unpin').addEventListener('click', ()=>{ pinned=null; draw(); });
-function labelNow(){ return `m ${state.m}, T ${state.T}`; }
 
 // --- readout ---
-function nearest(x,y){
-  let best=null, bd=1e18;
+function nearest(x,y){ let best=null, bd=1e18;
   for (const [n,e,nn] of PLACES){ const d=(e*1000-x)**2+(nn*1000-y)**2; if(d<bd){bd=d;best=n;} }
-  return Math.sqrt(bd)<25000 ? 'near '+best : `E ${Math.round(x/1000)} km, N ${Math.round(y/1000)} km`;
-}
-function regimeOf(wf){ return wf>=0.25?['sea','Sea-preferring']:wf<=0.10?['land','Inland-preferring']:['mix','Mixed']; }
+  return Math.sqrt(bd)<20000 ? 'near '+best : `E ${Math.round(x/1000)}, N ${Math.round(y/1000)} km`; }
 function show(){
-  if (!route){ $('regime').className='chip mix'; $('regime').textContent='no route'; $('stats').innerHTML=''; $('status').textContent='No route with these settings. Loosen the slope limit or open more sea.'; return; }
-  const [cls, txt] = regimeOf(route.wf);
+  const r = cur(); if (!r) return;
+  const [cls, txt] = regimeOf(r.wf);
   $('regime').className='chip '+cls; $('regime').textContent=txt;
-  const k = v => (v/1000).toFixed(1)+' km';
-  const tr = route.transfers;
-  const trTxt = tr.length===0 ? 'none' : tr.length>4 ? `${tr.length}: first onto water ${nearest(tr[0][0],tr[0][1])}, last landing ${nearest(tr[tr.length-1][0],tr[tr.length-1][1])}` : tr.map(t=>(t[2]?'onto water ':'landing ')+nearest(t[0],t[1])).join('; ');
+  const tr = r.tr;
+  let trTxt = 'none';
+  if (tr.length) {
+    const on = tr.find(t=>t[2]===1), off = [...tr].reverse().find(t=>t[2]===0);
+    const n = Math.ceil(tr.length/2);
+    trTxt = n===1 ? `onto water ${nearest(on[0]*100,on[1]*100)}; landing ${nearest(off[0]*100,off[1]*100)}`
+                  : `${n} water legs: first onto water ${nearest(on[0]*100,on[1]*100)}, last landing ${nearest(off[0]*100,off[1]*100)}`;
+  }
   const pair = (a,b,wide) => `<div class="statpair"${wide?' style="grid-column:1/-1"':''}><dt>${a}</dt><dd>${b}</dd></div>`;
-  $('stats').innerHTML = pair('Total cost', (route.cost/1000).toFixed(1)+' flat-km') + pair('Route length', k(route.len))
-    + pair('On water', `${k(route.wlen)} · ${(100*route.wf).toFixed(1)} %`) + pair('Overland', k(route.len-route.wlen))
-    + pair('Climb / descent', `${Math.round(route.climb)} m / ${Math.round(route.desc)} m`)
-    + pair('Water transfers', `<span style="font-family:var(--body);font-size:12.5px">${trTxt}</span>`, true);
-  const st = state.custom ? 'custom start' : START[state.start][2];
-  $('status').textContent = `${st} → Stonehenge · ${state.cell} m grid · ${state.nbr} moves`;
+  $('stats').innerHTML = pair('Route length', r.km.toFixed(1)+' km') + pair('On water', `${r.wkm.toFixed(1)} km · ${(100*r.wf).toFixed(1)} %`)
+    + pair('Climb / descent', `${r.climb} m / ${r.desc} m`) + pair('Total cost', r.cost.toFixed(1)+' flat-km')
+    + pair('Water', `<span style="font-family:var(--body);font-size:12.5px">${trTxt}</span>`, true);
+  $('status').textContent = `Carn Goedog → Stonehenge · 200 m grid · water ${fm(L.dials.m[state.mi])} × · loading ${state.t} km · climb ${state.c}`;
 }
 
-// --- closed-sea overlay ---
-const maskCanvas = document.createElement('canvas'); let maskInfo = null;
-function setMask(m){
-  if (!m) return; maskCanvas.width=m.W; maskCanvas.height=m.H;
-  const mc=maskCanvas.getContext('2d'), img=mc.createImageData(m.W,m.H), d=img.data;
-  for (let i=0;i<m.shut.length;i++){ if (m.shut[i]){ const k=4*i; d[k]=28; d[k+1]=38; d[k+2]=48; d[k+3]=105; } }
-  mc.putImageData(img,0,0); maskInfo={cell:m.W===825?400:200};
-}
 // --- map ---
 function view(){ return VIEWS[state.view]; }
 function fitCanvas(){
-  const v=view(), w=canvas.clientWidth||800, ratio=(v.ymax-v.ymin)/(v.xmax-v.xmin);
-  const dpr=Math.min(2, window.devicePixelRatio||1);
-  canvas.width=Math.round(w*dpr); canvas.height=Math.round(w*ratio*dpr);
-  canvas.style.height = (w*ratio)+'px';
+  const v=view(), w=canvas.clientWidth||800, ratio=(v.ymax-v.ymin)/(v.xmax-v.xmin), dpr=Math.min(2, window.devicePixelRatio||1);
+  canvas.width=Math.round(w*dpr); canvas.height=Math.round(w*ratio*dpr); canvas.style.height=(w*ratio)+'px';
 }
-function toPx(x,y){ const v=view(); return [ (x-v.xmin)/(v.xmax-v.xmin)*canvas.width, (v.ymax-y)/(v.ymax-v.ymin)*canvas.height ]; }
+function toPx(x,y){ const v=view(); return [(x-v.xmin)/(v.xmax-v.xmin)*canvas.width, (v.ymax-y)/(v.ymax-v.ymin)*canvas.height]; }
+const maskCanvas = document.createElement('canvas'); let maskFor = null;
 function draw(){
   fitCanvas();
   const v=view(), W=canvas.width, H=canvas.height, s=W/800;
-  ctx.fillStyle = '#9fb8c4'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#9fb8c4'; ctx.fillRect(0,0,W,H);
   if (relief.complete && relief.naturalWidth){
-    const sx=(v.xmin-FRAME.xmin)/200, sy=(FRAME.ymax-v.ymax)/200, sw=(v.xmax-v.xmin)/200, sh=(v.ymax-v.ymin)/200;
-    ctx.drawImage(relief, sx, sy, sw, sh, 0, 0, W, H);
+    ctx.drawImage(relief, (v.xmin-FRAME.xmin)/200, (FRAME.ymax-v.ymax)/200, (v.xmax-v.xmin)/200, (v.ymax-v.ymin)/200, 0, 0, W, H);
   }
-  if (maskInfo){ const c=maskInfo.cell; ctx.save(); ctx.imageSmoothingEnabled=false;
-    ctx.drawImage(maskCanvas, (v.xmin-FRAME.xmin)/c, (FRAME.ymax-v.ymax)/c, (v.xmax-v.xmin)/c, (v.ymax-v.ymin)/c, 0, 0, W, H); ctx.restore(); }
-  if (state.coast==='bristol'){ const [x0]=toPx(200000,0); ctx.save();
-    ctx.setLineDash([6*s,5*s]); ctx.strokeStyle='rgba(30,40,50,.55)'; ctx.lineWidth=1.2*s; ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0,H); ctx.stroke(); ctx.restore(); }
-  // places
-  ctx.font = `${11*s}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline='middle';
+  if (L && L.masks && state.coast!=='open'){
+    const mk = L.masks[state.coast];
+    if (maskFor!==state.coast){ maskFor=state.coast; drawMask(mk); }
+    ctx.save(); ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(maskCanvas, (v.xmin-FRAME.xmin)/mk.cell, (FRAME.ymax-v.ymax)/mk.cell, (v.xmax-v.xmin)/mk.cell, (v.ymax-v.ymin)/mk.cell, 0, 0, W, H); ctx.restore();
+  }
+  ctx.font=`${11*s}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline='middle';
   for (const [n,e,nn] of PLACES){ const [px,py]=toPx(e*1000,nn*1000); if(px<0||py<0||px>W||py>H) continue;
     ctx.fillStyle='rgba(30,35,38,.85)'; ctx.beginPath(); ctx.arc(px,py,2.2*s,0,7); ctx.fill();
     ctx.lineWidth=3*s; ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.strokeText(n,px+5*s,py); ctx.fillText(n,px+5*s,py); }
-  if (pinned) drawPath(pinned.xy, null, true);
-  if (route) drawPath(route.xy, route.wflag, false);
-  if (route) for (const t of route.transfers){ const [px,py]=toPx(t[0],t[1]); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px,py,4.2*s,0,7); ctx.fill(); ctx.fillStyle='#1b2326'; ctx.beginPath(); ctx.arc(px,py,2.4*s,0,7); ctx.fill(); }
-  // markers
-  const st = state.custom || START[state.start];
-  marker(st[0],st[1],'#b3261e', state.custom?'Start':START[state.start][2]);
-  marker(END[0],END[1],'#1b2326','Stonehenge', true);
+  if (L && state.all){
+    ctx.save(); ctx.strokeStyle='rgba(30,35,40,.22)'; ctx.lineWidth=1*s; ctx.lineJoin='round';
+    for (const p of L.paths){ ctx.beginPath(); for (let i=0;i<p.xy.length;i+=2){ const [px,py]=toPx(p.xy[i]*10,p.xy[i+1]*10); i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.stroke(); }
+    ctx.restore();
+  }
+  const r = cur();
+  if (r){ drawPath(L.paths[r.p]);
+    for (const t of r.tr){ const [px,py]=toPx(t[0]*100,t[1]*100); ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px,py,4.2*s,0,7); ctx.fill(); ctx.fillStyle='#1b2326'; ctx.beginPath(); ctx.arc(px,py,2.4*s,0,7); ctx.fill(); } }
+  marker(START[0],START[1],'#b3261e',START[2]); marker(END[0],END[1],'#1b2326','Stonehenge',true);
+}
+function drawMask(mk){
+  maskCanvas.width=mk.W; maskCanvas.height=mk.H;
+  const c=maskCanvas.getContext('2d'), img=c.createImageData(mk.W,mk.H), d=img.data;
+  // run-length rows: [row, start, len, ...]
+  for (let i=0;i<mk.runs.length;i+=3){ const r=mk.runs[i], a=mk.runs[i+1], n=mk.runs[i+2];
+    for (let k=a;k<a+n;k++){ const j=4*(r*mk.W+k); d[j]=28; d[j+1]=38; d[j+2]=48; d[j+3]=105; } }
+  c.putImageData(img,0,0);
 }
 function marker(x,y,col,label,star){
   const [px,py]=toPx(x,y), s=canvas.width/800;
-  ctx.save(); ctx.fillStyle=col; ctx.strokeStyle='#fff'; ctx.lineWidth=2*s;
-  ctx.beginPath(); if(star){ for(let i=0;i<10;i++){const r=(i%2?3.2:8)*s, a=-Math.PI/2+i*Math.PI/5; ctx.lineTo(px+r*Math.cos(a),py+r*Math.sin(a));} ctx.closePath(); } else ctx.arc(px,py,5.5*s,0,7);
+  ctx.save(); ctx.fillStyle=col; ctx.strokeStyle='#fff'; ctx.lineWidth=2*s; ctx.beginPath();
+  if(star){ for(let i=0;i<10;i++){const r=(i%2?3.2:8)*s, a=-Math.PI/2+i*Math.PI/5; ctx.lineTo(px+r*Math.cos(a),py+r*Math.sin(a));} ctx.closePath(); } else ctx.arc(px,py,5.5*s,0,7);
   ctx.stroke(); ctx.fill();
   ctx.font=`600 ${12*s}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline='middle'; ctx.lineWidth=3.5*s; ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.fillStyle='#1b2326';
   ctx.strokeText(label,px+9*s,py-9*s); ctx.fillText(label,px+9*s,py-9*s); ctx.restore();
 }
-function drawPath(xy, wflag, ghost){
-  const s=canvas.width/800, n=xy.length/2;
-  const landCol = '#9c4a22', seaCol = '#1f4f86';
+function drawPath(p){
+  const s=canvas.width/800, n=p.xy.length/2;
   ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
-  // halo
-  ctx.strokeStyle= ghost?'rgba(255,255,255,.55)':'rgba(255,255,255,.85)'; ctx.lineWidth=(ghost?4:6)*s;
-  ctx.beginPath(); for(let i=0;i<n;i++){ const [px,py]=toPx(xy[2*i],xy[2*i+1]); i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.stroke();
-  if (ghost){ ctx.setLineDash([7*s,5*s]); ctx.strokeStyle='#55626a'; ctx.lineWidth=2.2*s; ctx.beginPath(); for(let i=0;i<n;i++){ const [px,py]=toPx(xy[2*i],xy[2*i+1]); i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.stroke(); ctx.restore(); return; }
-  ctx.lineWidth=3*s;
-  let i=1;
-  while(i<n){ const w=wflag[i]; ctx.strokeStyle = w?seaCol:landCol; ctx.beginPath(); let [px,py]=toPx(xy[2*i-2],xy[2*i-1]); ctx.moveTo(px,py);
-    while(i<n && wflag[i]===w){ [px,py]=toPx(xy[2*i],xy[2*i+1]); ctx.lineTo(px,py); i++; } ctx.stroke(); }
+  ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=6.5*s; ctx.beginPath();
+  for (let i=0;i<n;i++){ const [px,py]=toPx(p.xy[2*i]*10,p.xy[2*i+1]*10); i?ctx.lineTo(px,py):ctx.moveTo(px,py);} ctx.stroke();
+  ctx.lineWidth=3.2*s; let i=1;
+  while(i<n){ const w=p.w[i]; ctx.strokeStyle = w?'#1f4f86':'#9c4a22'; ctx.beginPath(); let [px,py]=toPx(p.xy[2*i-2]*10,p.xy[2*i-1]*10); ctx.moveTo(px,py);
+    while(i<n && p.w[i]===w){ [px,py]=toPx(p.xy[2*i]*10,p.xy[2*i+1]*10); ctx.lineTo(px,py); i++; } ctx.stroke(); }
   ctx.restore();
 }
-canvas.addEventListener('click', e=>{
-  const r=canvas.getBoundingClientRect(), v=view();
-  const x=v.xmin+(e.clientX-r.left)/r.width*(v.xmax-v.xmin), y=v.ymax-(e.clientY-r.top)/r.height*(v.ymax-v.ymin);
-  state.custom=[x,y,'Start']; setSeg('s-seg',''); draw(); schedule();
-});
-window.addEventListener('resize', ()=>{ draw(); });
-matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', drawChart);
+window.addEventListener('resize', draw);
 
-// --- chart ---
-function drawChart(){
-  const svg=$("chart"), W=900, H=270, L=46, R=14, T=14, B=40;
-  const xs = m => L + (Math.log(m/0.05)/Math.log(1000))*(W-L-R);
-  const ys = f => T + (1-f)*(H-T-B);
-  const ink=css('--muted'), rule=css('--rule'), sea=css('--sea'), land=css('--land'), acc=css('--accent');
-  let h='';
-  h+=`<rect x="${L}" y="${ys(1)}" width="${W-L-R}" height="${ys(0.25)-ys(1)}" fill="${sea}" fill-opacity=".08"/>`;
-  h+=`<rect x="${L}" y="${ys(0.10)}" width="${W-L-R}" height="${ys(0)-ys(0.10)}" fill="${land}" fill-opacity=".10"/>`;
-  for (const f of [0,0.25,0.5,0.75,1]) h+=`<line x1="${L}" x2="${W-R}" y1="${ys(f)}" y2="${ys(f)}" stroke="${rule}"/><text x="${L-6}" y="${ys(f)+4}" text-anchor="end">${Math.round(f*100)}%</text>`;
-  for (const m of [0.05,0.1,0.2,0.5,1,2,5,10,20,50]) h+=`<line x1="${xs(m)}" x2="${xs(m)}" y1="${T}" y2="${H-B}" stroke="${rule}" stroke-opacity=".6"/><text x="${xs(m)}" y="${H-B+16}" text-anchor="middle">${m}</text>`;
-  h+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">water cost m (× flat ground, log scale)</text>`;
-  h+=`<text x="${W-R-4}" y="${ys(1)+14}" text-anchor="end">sea-preferring ≥ 25 %</text><text x="${W-R-4}" y="${ys(0.10)+14}" text-anchor="end">inland-preferring ≤ 10 %</text>`;
-  if (sweep){
-    const pts=sweep.pts.filter(q=>q.wf!=null);
-    let d=''; pts.forEach((q,i)=>{ d+=(i?'L':'M')+xs(q.m).toFixed(1)+' '+ys(q.wf).toFixed(1); });
-    h+=`<path d="${d}" fill="none" stroke="${acc}" stroke-width="2"/>`;
-    for (const q of pts) h+=`<circle cx="${xs(q.m)}" cy="${ys(q.wf)}" r="3.2" fill="${q.wf>=0.25?sea:q.wf<=0.10?land:css('--warn')}"/>`;
-    if (sweep.sw){ const x=xs(sweep.sw); h+=`<line x1="${x}" x2="${x}" y1="${T}" y2="${H-B}" stroke="${css('--ink')}" stroke-dasharray="4 3"/><text x="${x+5}" y="${T+12}" style="fill:${css('--ink')}">switch ${sweep.sw.toFixed(2)}</text>`; }
-  } else {
-    h+=`<text x="${(L+W-R)/2}" y="${(T+H-B)/2}" text-anchor="middle">Run the sweep to plot 19 water costs and find the switch.</text>`;
-  }
-  const cx=xs(Math.min(50,Math.max(0.05,state.m)));
-  h+=`<line x1="${cx}" x2="${cx}" y1="${T}" y2="${H-B}" stroke="${acc}" stroke-opacity=".7" stroke-width="2"/>`;
-  svg.innerHTML=h;
-}
-
-applyState(); setSeg2(); draw(); drawChart();
-ensureGrid(400).then(go);
+sync(); draw();
+fetch('data/lattice.json').then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d=>{ L=d; sync(); })
+  .catch(()=>{ $('status').textContent='Routes did not load. Reload the page to try again.'; });
 })();
 </script>
 
