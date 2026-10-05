@@ -72,7 +72,7 @@ Only the last row follows the A40 / Usk–Wye family. The Teifi is not used in a
 - Conduit rivers use a 400 m buffer each side, so the "river" is a corridor about 1 km wide that includes the valley floor. In pass 2 the water fraction counted sea only and ignored conduit river cells. A4 counts both.
 - A barrier river costs 100 × d per cell. A crossing of a buffered river is about 5 cells, so in practice it is impassable.
 - The Severn-approach classifier read the first crossing of E 340 km only.
-- `PROTOCOL.md` in the local copy (D:\Projects\bluestone-sea-dial) predates A1–A3. The GitHub copy is current.
+- The local copy (D:\Projects\bluestone-sea-dial) predated A1–A3 at the start of this review; it has since been synced to GitHub `main`.
 
 ---
 
