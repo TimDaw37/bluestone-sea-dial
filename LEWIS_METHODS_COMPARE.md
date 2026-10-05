@@ -1,7 +1,7 @@
 # Lewis (2024) vs our bluestone sea dial: methods comparison
 
 **Paper:** J. Lewis, "Estimating the scale-dependent influence of natural terrestrial corridors on the positioning of settlements: A multi-scale study of Roman forts in Wales", *J. Archaeol. Sci.* 170 (2024) 106055. Checked against the published PDF, the April 2024 preprint (josephlewis.github.io/RW_Natural_Corridors.pdf, same methods) and his public code (github.com/josephlewis/RW_Natural_Corridors, `R/Main.R`).
-**Ours:** `PROTOCOL.md` (amendments A1, A2), `first-pass/RESULTS.md`, `first-pass/LOCKED_params.json`, `pass-2/LOCKED_params.json`. Written 5 Oct 2026.
+**Ours:** `PROTOCOL.md` (amendments A1–A3), `first-pass/RESULTS.md`, `pass-2/RESULTS.md`, `pass-3/RESULTS.md`, and the matching `LOCKED_params.json` files. Written 5 Oct 2026; status updated after pass-2 and pass-3.
 
 ---
 
@@ -33,11 +33,11 @@
 | **OD pair** | 794 × 793 pairs over Wales and the borders | 2 starts (Carn Goedog, Craig Rhos-y-felin) → Stonehenge | We ask about one journey, not a general corridor map, so the point-process and window stage has nothing to explain here. Two starts test stability (P3). |
 | **Sea mask** | Sea = NoData (impassable) | Sea and estuary cells (DEM elev < 0) are traversable. Pass 2 flood-fills open-sea NoData and adds a `bristol_channel` / `full_coast` reach dial | The whole question is whether a sea leg ever wins, so the sea has to be a priced option instead of a wall. |
 | **Water cost** | Fixed river speeds borrowed from Roman transport studies | `m_water` sweep, 0.1–50 (pass 2: 0.05–10). Each water step costs `m_water × d`, i.e. a multiple of the cost of flat ground | There is no defensible Neolithic water cost. Picking one would choose the answer, so we report the switch point instead (first pass: between m = 1 and m = 2, both starts). |
-| **Grid** | 100 m | 200 m (amendment A1) | Same reason as his (run time), only coarser. The choice between sea and land is decided over about 240 km, so 200 m is fair for the regime but not for route detail. Pass-3 re-ran the switch bracket and Land’s End test at 100 m: switch 1→2 holds; Land’s End only at m=0.05. 50 m full-frame skipped as not cheap. |
+| **Grid** | 100 m | 200 m (A1), then 100 m confirmation (A3); full-frame 50 m skipped as not cheap | Same reason as his (run time). Pass-3 at 100 m kept the 1→2 switch and inland lock-in; Land's End only survived at `m_water = 0.05`. |
 | **Slope cost** | Herzog polynomial, energy-based. Cheapest at about −10% (gentle downhill); ×2.7 flat cost at +10% | `d × (1 + 4·up + 2.6·dn)`, linear. Flat is cheapest; ×1.4 at +10%, ×1.26 at −10% | The protocol asked for a simple formula locked before the run. A linear form with base 1 gives `m_water` a clean unit ("× flat walking"), which Herzog's curve does not, because its minimum is off flat. Our formula is a generic movement cost, not a haulage model. |
 
 **Two caveats.**
 - The 1–2 switch belongs to *our* slope formula. Herzog punishes climbing much harder and rewards gentle descent, so a Herzog run could move the switch, in a direction we can't predict without running it. That would be a worthwhile secondary check, logged as a dated amendment.
 - As a rough comparison only: if Lewis's river speeds are expressed against his flat-ground conductance, they imply about **m ≈ 0.9 downstream and m ≈ 3.7 upstream**. That straddles our switch, but it mixes time-based and energy-based units, and it applies to rivers, not sea.
 
-**Status:** pass-2 parameters and masks are locked (09:00), but there are no pass-2 results yet. Pass-2 river conduits use the same `m_water` as the sea in both directions (Lewis uses asymmetric speeds). Our barrier is a 100× penalty, where his is a hard cut.
+**Status (after pass-2 and pass-3, 5 Oct 2026).** The switch stayed between `m_water` 1 and 2 under every river × coastal setting at 200 m, and again at 100 m. The inland A40 / Teifi–Usk–Wye family locks in at `m ≥ 2` when rivers are ignore or conduit; under barrier that story breaks. Land's End only appears when water is very cheap (`m ≤ 0.1` at 200 m; only `m = 0.05` at 100 m) and `full_coast` is allowed. Pass-2 river conduits use the same `m_water` as the sea in both directions (Lewis uses asymmetric speeds). Our barrier is a 100× penalty, where his is a hard cut. Full-frame 50 m was not run.
