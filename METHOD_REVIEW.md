@@ -76,6 +76,10 @@ Only the last row follows the A40 / Usk–Wye family. The Teifi is not used in a
 
 ---
 
+### 2.8 Mid-Holocene sea level (ignored, deliberately)
+
+The model uses today's coast. This is defensible for the Preseli–Stonehenge routes. By the mid-Holocene (c. 5,000–4,500 cal BP) relative sea level around the Bristol Channel was already within a few metres of present, not the tens of metres below present of the early Holocene. The coasts the sea routes use (Pembrokeshire, Carmarthen Bay, Gower, north Devon) are mostly steep. A few metres of vertical change therefore moves the shoreline by much less than a 200 m cell. The exception is the low Severn levels (Gwent and Somerset Levels), where a low-gradient surface and later reclamation mean the mid-Holocene tidal edge may have lain some way inland of today's. The routes' landfalls near Avonmouth and Weston-super-Mare are close to those levels. This affects where a stone could come ashore, not whether the sea is cheaper than the land. A palaeo-coast mask is needed for low embayments like the Wash and Fenland, where the shoreline differed by tens of kilometres (research note `research/altar-stone/east-anglia-mid-holocene-coast.md`, citing Shennan et al. 2018; Brew et al. 2015). It is not needed for this dial.
+
 ## 3. A4 results (switch value of `m_water`)
 
 Switch = smallest `m_water` with water ≤ 10 % of route length (bisection, tolerance 0.5 %). Both starts, 200 m and 8 moves unless stated. The full rows are in `a4-checks/results_*.csv`.
@@ -97,6 +101,24 @@ Reading the table:
 - Without a transfer cost, nothing in the terrain moves the switch more than about 10 %.
 - With a transfer cost, the switch falls below 1. The sea must then be genuinely cheaper per km than flat ground, by 20 % at T = 25 km and by 56 % at T = 50 km. Climbing penalties push the switch back up.
 - Sea routes with T ≥ 25 km embark at Pendine/Marros (222,207) and land near Weston-super-Mare (332,164). At T = 50 km they land at Avonmouth (352,177).
+
+## 3a. A5 results: keeping to the coast
+
+Switch value of `m_water` (whole coast open; Carn Goedog / Craig Rhos-y-felin). Full rows: `a5-checks/results.csv`.
+
+| Coast rule | T = 0 | T = 25 km | Land's End route at m = 0.05 |
+|---|---|---|---|
+| No limit | 1.030 / 1.030 | 0.808 / 0.792 | 684.5 km |
+| In sight of land (eye 2 m) | 1.030 / 1.030 | 0.808 / 0.792 | 684.5 km (unchanged) |
+| Within 20 km | 1.030 / 1.030 | 0.808 / 0.792 | 753.9 km |
+| Within 10 km | 1.030 / 1.030 | 0.808 / 0.792 | 863.9 km |
+| Within 5 km | 1.030 / 1.030 | 0.784 / 0.771 | 988.9 km |
+| Within 2 km | 0.973 / 0.944 | 0.678 / 0.669 | not taken (407.7 km, Channel route) |
+
+- Every sea cell used by these routes, the Land's End loop included, has land in sight, so the in-sight rule closes only open Atlantic water that no route needs.
+- Distance limits of 20 km or less mainly lengthen the voyages. They move the switch only at 5 km (with a transfer charge) and at 2 km.
+- The Bristol Channel is narrow enough that Atkinson's coast-hugging assumption hardly affects the choice between sea and land.
+- The "Bristol Channel only" setting (`bristol_channel`) gives the same switch values as the whole coast at every rule (see the CSV). The web page now omits it and leaves the whole coast open.
 
 ## 4. Pass/fail and predictions after A4
 

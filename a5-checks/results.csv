@@ -1,0 +1,49 @@
+rule,coastal,transfer_km,start,switch_m,last_sea_m,sea_len_km,sea_water_pct,sea_transfers,sea_transfer_pts,inland_len_km,inland_water_pct,le_len_km,le_water_pct,lands_end,le_transfer_pts
+none,bristol_channel,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,,,,
+none,bristol_channel,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,,,,
+none,bristol_channel,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+none,bristol_channel,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+none,full_coast,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,684.5,93.2,True,"206,240;436,115"
+none,full_coast,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,681.8,93.6,True,"206,240;436,115"
+none,full_coast,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+none,full_coast,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+in_sight,bristol_channel,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,,,,
+in_sight,bristol_channel,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,,,,
+in_sight,bristol_channel,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+in_sight,bristol_channel,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+in_sight,full_coast,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,684.5,93.2,True,"206,240;436,115"
+in_sight,full_coast,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,681.8,93.6,True,"206,240;436,115"
+in_sight,full_coast,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+in_sight,full_coast,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+within_20,bristol_channel,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,,,,
+within_20,bristol_channel,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,,,,
+within_20,bristol_channel,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+within_20,bristol_channel,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+within_20,full_coast,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,753.9,93.9,True,"206,240;436,115"
+within_20,full_coast,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,751.2,94.2,True,"206,240;436,115"
+within_20,full_coast,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+within_20,full_coast,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+within_10,bristol_channel,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,,,,
+within_10,bristol_channel,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,,,,
+within_10,bristol_channel,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+within_10,bristol_channel,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+within_10,full_coast,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.6,863.9,94.6,True,"206,240;436,115"
+within_10,full_coast,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.2,861.3,94.9,True,"206,240;436,115"
+within_10,full_coast,25,Carn_Goedog,0.808,0.805,248.0,52.1,2,"222,207;332,164",256.5,0.0,,,,
+within_10,full_coast,25,Craig_Rhos_y_felin,0.792,0.789,251.5,51.4,2,"222,207;332,164",258.5,0.0,,,,
+within_5,bristol_channel,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.8,,,,
+within_5,bristol_channel,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.4,,,,
+within_5,bristol_channel,25,Carn_Goedog,0.784,0.781,251.2,52.3,2,"225,207;332,164",256.5,0.0,,,,
+within_5,bristol_channel,25,Craig_Rhos_y_felin,0.771,0.768,254.1,52.1,2,"231,211;332,164",258.5,0.0,,,,
+within_5,full_coast,0,Carn_Goedog,1.03,1.027,238.9,30.2,24,24 transfers,238.9,8.8,988.9,95.3,True,"206,240;436,115"
+within_5,full_coast,0,Craig_Rhos_y_felin,1.03,1.027,242.1,29.5,20,20 transfers,242.1,8.4,986.2,95.6,True,"206,240;436,115"
+within_5,full_coast,25,Carn_Goedog,0.784,0.781,251.2,52.3,2,"225,207;332,164",256.5,0.0,,,,
+within_5,full_coast,25,Craig_Rhos_y_felin,0.771,0.768,254.1,52.1,2,"231,211;332,164",258.5,0.0,,,,
+within_2,bristol_channel,0,Carn_Goedog,0.973,0.96,242.6,25.4,18,18 transfers,237.6,3.3,,,,
+within_2,bristol_channel,0,Craig_Rhos_y_felin,0.944,0.941,246.1,25.2,20,20 transfers,239.9,3.4,,,,
+within_2,bristol_channel,25,Carn_Goedog,0.678,0.676,276.5,62.3,2,"231,212;354,185",256.5,0.0,,,,
+within_2,bristol_channel,25,Craig_Rhos_y_felin,0.669,0.667,280.0,61.6,2,"231,212;354,185",258.5,0.0,,,,
+within_2,full_coast,0,Carn_Goedog,0.973,0.96,242.6,25.4,18,18 transfers,237.6,3.3,407.7,80.0,False,12 transfers
+within_2,full_coast,0,Craig_Rhos_y_felin,0.944,0.941,246.1,25.2,20,20 transfers,239.9,3.4,405.0,80.5,False,12 transfers
+within_2,full_coast,25,Carn_Goedog,0.678,0.676,276.5,62.3,2,"231,212;354,185",256.5,0.0,,,,
+within_2,full_coast,25,Craig_Rhos_y_felin,0.669,0.667,280.0,61.6,2,"231,212;354,185",258.5,0.0,,,,
