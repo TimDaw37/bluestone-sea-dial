@@ -84,7 +84,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
 <header>
   <div class="eyebrow">Preseli to Stonehenge — sea or land?</div>
   <h1>Calculating the bluestone route</h1>
-  <p class="lede">Set how costly water is next to walking on the flat. The map shows the cheapest Preseli–Stonehenge route under those rules, picked from 936 already-solved paths. A sensitivity test — not a reconstruction.</p>
+  <p class="lede">Set how costly water is next to walking on the flat. For every combination of settings the model has searched the terrain for the cheapest Preseli–Stonehenge route; the map shows the route it found. No route was drawn by hand. A sensitivity test — not a reconstruction.</p>
 </header>
 
 <div class="main">
@@ -171,7 +171,7 @@ footer{margin-top:28px;font-size:12.5px;color:var(--muted);border-top:1px solid 
     <div class="formula">overland   d + c × climb + 0.65c × descent
 on water   m × d
 loading    + T each time onto or off water</div>
-    <p><em>d</em> is distance in metres, <em>c</em> the climb penalty, <em>m</em> the water multiplier and <em>T</em> the loading charge. OS Terrain 50 at 200 m; sea = cells mostly below 0 m OD. Cheapest path by Dijkstra, solved offline.</p>
+    <p><em>d</em> is distance in metres, <em>c</em> the climb penalty, <em>m</em> the water multiplier and <em>T</em> the loading charge. OS Terrain 50 at 200 m; sea = cells mostly below 0 m OD. The settings come first: each of the 936 combinations (both outcrops) was run in advance, and Dijkstra’s algorithm found the cheapest path across the terrain for it. The page only looks up the answer.</p>
   </section>
   <section class="card">
     <h2>What the model leaves out</h2>
